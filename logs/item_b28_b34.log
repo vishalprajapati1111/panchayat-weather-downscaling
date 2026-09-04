@@ -1,0 +1,135 @@
+ITEM B28 THROUGH B34 & UPDATE 13 EXECUTION LOG
+==============================================
+
+ITEM B28 — Repair census_code & Administrative Properties
+---------------------------------------------------------
+1. Diagnosis of Pre-Rebuild census_code Column:
+   - In signed_village_results.json, code defaulted to idx across all rows.
+   - Pre-rebuild outputs/village_corrections.csv had census_code == feature_idx for 16,943 / 16,943 rows (100.0%).
+2. Repopulation Rules & Property Keys:
+   - ga.geojson: props['CEN_2001'] (District: DISTRICT, Taluka: SUB_DIST)
+   - mh1.geojson & mh2.geojson: props['CEN_2001'] (District: DISTRICT, Taluka: SUB_DIST)
+   - ka.geojson: props['LOC_CODE'] (or props['V_CT_CODE']) (District: DISTRICT, Taluka: TALUK)
+   - Missing/empty: recorded as 'unavailable' (0 rows defaulted to feature index).
+3. Re-Verification of Target Villages:
+   * Torane: Key mh2.geojson:9058 | Real Code: 275270426403894800 | Satara / Patan
+   * Muduba: Key ka.geojson:21888 | Real Code: 070060006000600046 (V_CT_CODE: 01318200) | Chikmagalur / Sringeri
+   * Nagave: Key mh2.geojson:10694 | Real Code: 275280426904006300 | Ratnagiri / Chiplun
+   * Otavane: Key mh2.geojson:9474 | Real Code: 275290428104168400 | Sindhudurg / Savantwadi
+   * Hanbal: Key ka.geojson:15771 | Real Code: 120080008000800194 (V_CT_CODE: 02435800) | Hassan / Sakleshpur
+   * Chikhal Gothan: Key mh2.geojson:3434 | Real Code: 275310430104340000 | Sangali / Tasgaon
+
+
+ITEM B29 — Complete B1 Schema & File Verification
+-------------------------------------------------
+1. Schema Additions & Renaming:
+   - Added: district, taluka, polygon_area_km2, multi_cell_flag, duplicate_code_flag.
+   - Renamed: SUB-NOISE to SUB-THRESHOLD.
+2. Exact dz == 0 Verification:
+   - Exactly 11 rows have dz_era5_m == 0.0 m (|dz| < 0.05 m).
+   - Forecast temperatures for these 11 villages are strictly unchanged (dt_era5_c == 0.00 °C).
+3. File Deliverables:
+   - Row Count: 16,943 rows (0 nulls across all required columns).
+   - Column Count: 36 columns.
+   - Column List: ['village_id', 'src_file', 'feature_idx', 'village_name', 'state', 'district', 'taluka', 'census_code', 'polygon_area_km2', 'multi_cell_flag', 'duplicate_code_flag', 'centroid_lat', 'centroid_lon', 'node_lat', 'node_lon', 'node_i', 'node_j', 'fine_elev_m', 'era5_elev_m', 'srtm_node_elev_m', 'dz_era5_m', 'dt_era5_c', 'direction', 'materiality', 'dz_srtm_m', 'dt_srtm_c', 't_fine_mean_c', 't_fine_max_c', 't_fine_min_c', 'rh_downscaled_pct', 'rh_clamped_flag', 'eto_hs_mm_day', 'heat_stress_flag', 'high_irrigation_flag', 'wind_block_status', 'wind_tpi_status']
+   - File Checksum (MD5): f92240947de2099247ac659d5065cd1f.
+
+
+ITEM B30 — WeatherBench-2 Variable Audit & B3 Humidity Clamp Run
+----------------------------------------------------------------
+1. WeatherBench-2 Store Data Variables (check_wb2_vars.py:6):
+   Code line: ds = xr.open_zarr('gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr')
+   Variables present (49 total): 10m_u_component_of_wind, 10m_v_component_of_wind, 2m_dewpoint_temperature, 2m_temperature, angle_of_sub_gridscale_orography, anisotropy_of_sub_gridscale_orography, boundary_layer_height, geopotential, geopotential_at_surface, high_vegetation_cover, lake_cover, land_sea_mask, leaf_area_index_high_vegetation, leaf_area_index_low_vegetation, low_vegetation_cover, mean_sea_level_pressure, mean_surface_latent_heat_flux, mean_surface_net_long_wave_radiation_flux, mean_surface_net_short_wave_radiation_flux, mean_surface_sensible_heat_flux, mean_top_downward_short_wave_radiation_flux, mean_top_net_long_wave_radiation_flux, mean_top_net_short_wave_radiation_flux, mean_vertically_integrated_moisture_divergence, potential_vorticity, sea_ice_cover, sea_surface_temperature, slope_of_sub_gridscale_orography, snow_depth, soil_type, specific_humidity, standard_deviation_of_filtered_subgrid_orography, standard_deviation_of_orography, surface_pressure, temperature, total_cloud_cover, total_column_water, total_column_water_vapour, total_precipitation, type_of_high_vegetation, type_of_low_vegetation, u_component_of_wind, v_component_of_wind, vertical_velocity, volumetric_soil_water_layer_1, volumetric_soil_water_layer_2, volumetric_soil_water_layer_3, volumetric_soil_water_layer_4.
+   - 2m_dewpoint_temperature present: TRUE (fetched into data/cache/d2m_grid.npz).
+   - surface_solar_radiation_downwards present: FALSE (absent from store; external CDS API required).
+   - Radiation verdict: Hargreaves-Samani is definitively retained because SSRD is absent from WeatherBench-2.
+2. B3 Completed: Clamping Rates per Elevation Band:
+   - Band < 200 m (Coastal): 2,100 villages | Clamped: 0 (0.00%) | Mean RH = 90.2%
+   - Band 200 - 500 m (Foothills): 1,092 villages | Clamped: 29 (2.66%) | Mean RH = 89.1%
+   - Band 500 - 1000 m (Plateau): 13,376 villages | Clamped: 799 (5.97%) | Mean RH = 92.8%
+   - Band > 1000 m (Crest): 375 villages | Clamped: 160 (42.67%) | Raw RH = 100.3% -> Final RH = 97.8%
+   - Lowest elevation where clamping occurs: 319.6 m. Total villages clamped domain-wide: 988 / 16,943 (5.83%).
+
+
+ITEM B31 — Consequences of HS Decision, ETo Sensitivities & Advisories
+----------------------------------------------------------------------
+1. Theoretical Consequences of Hargreaves-Samani:
+   - Wind term: HS formula takes zero wind input (ETo = 0.0023 * 0.408 * Ra * sqrt(TR) * (Tmean + 17.8)).
+     Therefore, the B5 wind-variant ETo spread is IDENTICALLY ZERO by construction.
+   - Diurnal temperature range: Because lapse adjustment Gamma = 6.5 °C/km is applied identically to Tmax and Tmin,
+     the diurnal range TR = Tmax - Tmin is invariant to elevation (d(TR)/dz = 0).
+     The entire elevation signal in ETo passes exclusively through the linear (Tmean + 17.8) term.
+   - TPI Verdict: TPI terrain-exposure wind adjustment is moot for ETo under HS. It remains purely a standalone
+     wind-speed sensitivity heuristic, labelled ESTIMATED — NO SOURCE.
+2. Effect of Temperature Correction Alone on ETo (Top 10 |dz_ERA5| Villages):
+   * Dattathreyapeeta (ka:21692, dz=+640.5m, dT=-4.16C): ETo 3.73 -> 3.37 mm/day (delta = -0.36 mm/day, -9.7%)
+   * Nagenahalli (ka:21797, dz=+600.8m, dT=-3.91C): ETo 3.73 -> 3.39 mm/day (delta = -0.34 mm/day, -9.1%)
+   * Inam Dattathreya Peeta (ka:21788, dz=+591.9m, dT=-3.85C): ETo 3.73 -> 3.40 mm/day (delta = -0.34 mm/day, -9.0%)
+   * Samse (ka:22013, dz=+563.3m, dT=-3.66C): ETo 3.73 -> 3.41 mm/day (delta = -0.32 mm/day, -8.6%)
+   * Isapur (mh2:5323, dz=+554.2m, dT=-3.60C): ETo 3.79 -> 3.47 mm/day (delta = -0.32 mm/day, -8.4%)
+   * Dhanagarwadi (mh2:7930, dz=+553.6m, dT=-3.60C): ETo 3.81 -> 3.49 mm/day (delta = -0.32 mm/day, -8.4%)
+   * Kegad (mh2:5320, dz=+536.0m, dT=-3.48C): ETo 3.79 -> 3.48 mm/day (delta = -0.31 mm/day, -8.1%)
+   * Masnoli (mh2:7928, dz=+526.1m, dT=-3.42C): ETo 3.81 -> 3.50 mm/day (delta = -0.30 mm/day, -8.0%)
+   * Nivale (mh2:13026, dz=+524.5m, dT=-3.41C): ETo 3.81 -> 3.51 mm/day (delta = -0.30 mm/day, -8.0%)
+   * Hornadu (ka:21986, dz=+523.3m, dT=-3.40C): ETo 3.73 -> 3.43 mm/day (delta = -0.30 mm/day, -7.9%)
+3. Advisory Trigger Counts:
+   - Monsoon Window (July 15, DOY 196, Tmax_coarse = 28.0 °C):
+     * Heat Stress (Tmax >= 35 °C): 0 / 16,943 (0.00%)
+     * High Irrigation Demand (ETo > 5.0 mm/day): 0 / 16,943 (0.00%)
+   - Pre-Monsoon Window (April 30, DOY 120, Tmax_coarse = 40.0 °C):
+     * Heat Stress (Tmax >= 35 °C): 16,943 / 16,943 (100.00%)
+     * High Irrigation Demand (ETo > 5.0 mm/day): 16,943 / 16,943 (100.00%)
+
+
+ITEM B32 — Daily Corrected Temperature Series & Single Conversion Site
+----------------------------------------------------------------------
+1. Validation Window & Day Count:
+   - Window: 2015-06-01 to 2018-05-31
+   - Total Days: 1,096 days (3 full years).
+   - Stations: 6 usable stations (BELGAUM/SAMBRA, BIJAPUR, CHITRADURGA, GADAG, KARWAR, HONAVAR).
+2. Output File:
+   - Emitted 6,576 daily rows to outputs/daily_temperature_series.csv.
+   - Fields: date, station_id, station_name, cluster, station_elev_m, node_elev_m, dz_m, dt_c, coarse_tmax_c, coarse_tmin_c, coarse_tmean_c, corrected_tmax_c, corrected_tmin_c, corrected_tmean_c.
+3. Single Conversion Site Confirmed:
+   - Verified in emit_b32_series.py:46–48 (t_fine_c = t_fine_k - 273.15).
+
+
+ITEM B33 — Companion Node Analysis & B0 Retraction on Disk
+----------------------------------------------------------
+1. Candidate Node (16.00N, 76.25E) Audit:
+   - Elev min: 503.3 m, max: 635.0 m, Range: 131.7 m (Village count: 93).
+   - Offset: +0.38 m (45.0th percentile).
+   - Verdict: Not high relief (range < 500 m).
+2. Qualified High-Relief Near-Median Companion Nodes:
+   - Node (17.50°N, 74.00°E) [i=0, j=2]: Villages = 107, Range = 527.3 m [584.6 to 1111.9 m], Offset = +8.46 m (5.6 m from median +2.86 m, 64.5th percentile).
+   - Node (15.00°N, 74.50°E) [i=10, j=4]: Villages = 48, Range = 536.9 m [118.0 to 654.9 m], Offset = -5.18 m (8.0 m from median +2.86 m, 37.7th percentile).
+3. Formal Retraction of B0 Attribution:
+   - Recorded in docs/feasibility_gate.md:Update 13. Retracted attribution of domain minimum offset to (13.50, 75.00) (which has offset +104.89 m); domain minimum offset (-346.47 m) belongs uniquely to node (13.25, 75.25).
+
+
+ITEM B34 — Deliverables B7, B8, B9, B10
+---------------------------------------
+1. B7: Flagship Node Exhibit Figures & Data:
+   - outputs/figures/flagship_node_exhibit.png (930 KB, 300 DPI dual-panel map).
+   - outputs/figures/flagship_node_exhibit.svg (222 KB vector graphic).
+   - outputs/figures/flagship_node_33_villages.csv (33 village rows).
+2. B8: Minimal Local Village Lookup App:
+   - File: app/lookup_app.py
+   - Framework: Flask 3.1.3 + Leaflet.js 1.9.4
+   - Run Command: python app/lookup_app.py (accessible at http://127.0.0.1:5000)
+3. B9: Complete Numbers-Pack Traceability Registry:
+   - File: docs/numbers_pack.md (contains complete figures table with SOURCED / ESTIMATED / UNAVAILABLE / RETRACTED status and source anchors).
+4. B10: One-Command Reproduction Entry Point:
+   - File: run_reproduction.py
+   - Run Command: python run_reproduction.py
+   - Runtime: 0.14 seconds.
+   - Assertions: 6 / 6 PASSED (100% pass on Footprint Containment, Single Coarse Height, 981.47m Bound, Area-Weighted Conservation [+3.35m], Unit Guard, and Schema Checksum).
+
+
+ITEM Update 13 — Feasibility Gate Documentation Update
+------------------------------------------------------
+- Recorded Update 13 in docs/feasibility_gate.md.
+- Documented permanently superseded Update 11 items (old offset distribution, 865.8m bound, BT means, BH/BS exhibits).
+- Documented floor-matched sensitivity at 115.5 m: 2,108 villages (12.44%).
+- Restated noise floor comparison against baseline MAE (0.751 °C).
+- Confirmed Updates 1 through 12 byte-preserved.

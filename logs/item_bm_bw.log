@@ -1,0 +1,372 @@
+ITEM BM THROUGH BW EXECUTION LOG
+=================================
+
+ITEM BM — Discrepancy Resolution & Orography Grid Consistency
+--------------------------------------------------------------
+1. Cause of the Three Orography Values:
+   - Cell bounds: The Western Ghats escarpment cell containing Indabettu and Halagadaka Estate spans
+     lat [13.00, 13.25]°N and lon [75.25, 75.50]°E (cell centre: 13.125°N, 75.375°E).
+   - Coarse SRTM elevation: Exactly 658.4 m (658.4112 m in GEE reduceResolution; inspect_grid_registration.py:23).
+   - In BH, the reported ERA5 orography of 812.1 m was the value at the north-eastern node (13.25°N, 75.50°E),
+     selected because np.argmin on grid lines broke ties toward the higher coordinate.
+   - In BC, Indabettu was evaluated against the south-western node (13.00°N, 75.25°E, ERA5=310.2 m),
+     giving dz_ERA5 = 126.7 - 310.2 = -183.5 m (not -584.2 m, which was an informal transcription of another station).
+   - The actual ERA5 orography at the cell's containing grid points spans 310.2 m (SW coastal plain) to 812.1 m (NE plateau crest).
+2. Carry-Over in BC Positive Table:
+   - The positive table in Section BC was partially carried over from AT's SRTM table, rather than sorted from dz_era5_arr.
+   - Actual ERA5 orography, array indices, and true dz_ERA5 for the eight villages:
+     * Torane (MH, code 9058): [i=0, j=1] (17.50°N, 73.75°E), ERA5 = 592.3 m, true dz_ERA5 = +374.9 m, dT = -2.44 °C.
+     * Samse (KA, code 22013): [i=17, j=7] (13.25°N, 75.25°E), ERA5 = 528.6 m, true dz_ERA5 = +563.3 m, dT = -3.66 °C.
+     * Humbarli (MH, code 9059): [i=0, j=1] (17.50°N, 73.75°E), ERA5 = 592.3 m, true dz_ERA5 = +359.3 m, dT = -2.34 °C.
+     * Chandel (MH, code 7511): [i=1, j=1] (17.25°N, 73.75°E), ERA5 = 507.3 m, true dz_ERA5 = +341.8 m, dT = -2.22 °C.
+     * Halagadaka Estate (KA, code 22152): [i=17, j=8] (13.25°N, 75.50°E), ERA5 = 812.1 m, true dz_ERA5 = +423.4 m, dT = -2.75 °C.
+     * Kudremukh Notified Area (KA, code 22063): [i=17, j=7] (13.25°N, 75.25°E), ERA5 = 528.6 m, true dz_ERA5 = +461.6 m, dT = -3.00 °C.
+     * [Unnamed code:7509] (MH): [i=1, j=1] (17.25°N, 73.75°E), ERA5 = 507.3 m, true dz_ERA5 = +321.7 m, dT = -2.09 °C.
+     * Balur Estate (KA, code 22145): [i=17, j=8] (13.25°N, 75.50°E), ERA5 = 812.1 m, true dz_ERA5 = +406.3 m, dT = -2.64 °C.
+3. 210 Populated Cells Comparison (ERA5 - SRTM):
+   - Populated cells (n=210): Min = -255.07 m, p1 = -243.70 m, p50 = -2.92 m, Mean = -17.69 m, p99 = +89.24 m, Max = +180.08 m.
+   - Full domain (n=239): Min = -255.07 m, p50 = -1.93 m, Mean = -15.61 m, Max = +180.08 m (reproducing AU exactly).
+
+
+ITEM BN — Scope of Index Offset Bug
+-----------------------------------
+1. Identity of Dropped Null Features:
+   - Null 1: 'Mhaisal(s)' (MH, Sangli district, Miraj taluka, mh2.geojson, feature index 4391; CEN_2001: 275310430204351900).
+   - Null 2: 'Madilge Bk.' (MH, Kolhapur district, Bhudargad taluka, mh2.geojson, feature index 10582; CEN_2001: 275300429104254300).
+2. Offset Extent & Impact:
+   - Total ingested: 16,945; Total reduced: 16,943.
+   - Null 1 occurred at position 13,645 in the ingested list.
+   - Null 2 occurred at position 16,402 in the ingested list.
+   - Features 0 to 13,644 (13,645 features, 80.5% of dataset): 0 offset (1-to-1 identical matching).
+   - Features 13,645 to 16,401 (2,757 features): 1-position array shift.
+   - Features 16,402 to 16,944 (541 features): 2-position array shift.
+   - Villages whose assigned ERA5 cell actually changed: 616 / 16,943 (3.64%).
+   - Villages whose assigned cell changed by > 1 grid cell: 102 / 16,943 (0.60%).
+   - Net threshold changes were small (36 villages) because adjacent Census polygons in the same taluka almost always share the same 0.25° box.
+3. Old vs New Values against ERA5 Model Orography:
+   | Metric | Offset Run (AU) [task-3183.log] | True Fixed Run (BC) [logs/item_bm_bw.log] |
+   |---|---|---|
+   | Min | -605.9 m | -519.0 m |
+   | p1 | -261.9 m | -257.1 m |
+   | p25 | -39.6 m | -39.2 m |
+   | p50 | -6.2 m | -6.2 m |
+   | p75 | +32.1 m | +32.0 m |
+   | p99 | +334.1 m | +326.4 m |
+   | Max | +993.7 m (spurious) | +640.5 m (true max) |
+   | Mean | -1.1 m | -1.1 m |
+   | > +150 m (cooling) | 758 (4.47%) | 741 (4.37%) |
+   | < -150 m (warming) | 681 (4.02%) | 662 (3.91%) |
+   | Total |dz| > 150 m | 1,439 (8.49%) | 1,403 (8.28%) |
+   | > +100 m (cooling) | 1,314 (7.76%) | 1,295 (7.64%) |
+   | < -100 m (warming) | 1,267 (7.48%) | 1,243 (7.34%) |
+   | Total |dz| > 100 m | 2,581 (15.23%) | 2,538 (14.98%) |
+
+
+ITEM BO — Permanent Terrain Assertions
+--------------------------------------
+Created engine/checks/terrain_assertions.py with 3 permanent checks:
+1. assert_arithmetic_bound: |dz_era5| <= 865.8 m (PASS: max observed = 640.5 m).
+2. assert_centroid_containment: polygon centroid within assigned cell (PASS: all 16,943 contained).
+3. assert_area_weighted_conservation: |area-weighted mean signed dz_srtm| <= 5.0 m (PASS: +1.51 m).
+
+
+ITEM BP — Fix of Log Line Citations
+-----------------------------------
+Correct line ranges in logs/item_bc_bl.log:
+- BE: lines 64–78
+- BF: lines 80–93
+- BG: lines 95–106
+- BH: lines 108–122
+- BI: lines 124–134
+- BJ: lines 136–147
+- BK: lines 149–158
+- BL: lines 160–187
+item_as_bb.log status: Byte-unchanged (size: 9,997 bytes).
+
+
+ITEM BQ — Census Code Deduplication Analysis
+--------------------------------------------
+1. Distribution of Codes across 16,943 Polygons:
+   - Distinct Census codes: 14,473.
+   - Codes appearing > 1 time: 1,218 codes.
+   - Total polygons involved in duplicates: 3,688 polygons (21.77%).
+   - Distribution of code lengths: 10-digit codes: 1,598; 18-digit codes: 4,188; others: village names / IDs.
+2. Code 2753104295 (Feature 7508 & 7509):
+   - Shared by 18 separate polygons in Shirala taluka, Sangli district, MH.
+   - All 18 carry NAME: '' (empty string).
+   - They represent split forest parcels / unorganized cadastral units, not distinct villages.
+   - Neither 7508 nor 7509 may be cited as a headline village. Headline maximum is Torane (code 275310429504313500, +604.9 m).
+
+
+ITEM BR — Centroid versus Areal Cell Assignment
+-----------------------------------------------
+1. Multi-Cell Exposure across Domain:
+   - Polygons spanning > 1 cell: 3,904 / 16,943 (23.04%).
+   - Polygons spanning > 2 cells: 322 / 16,943 (1.90%).
+   - Maximum cells touched: 4 cells.
+2. Centroid Rule Retention:
+   - In the flagship Ghats cell, 27 of 30 villages (90.0%) are wholly inside.
+   - Centroid assignment is retained with 23.0% boundary-straddling exposure quantified.
+
+
+ITEM BS — Rebuilt Flagship 30-Village Ghats Exhibit
+---------------------------------------------------
+- Cell location: 13.00–13.25°N, 75.25–75.50°E (centre: 13.125°N, 75.375°E; Mudigere / Belthangady taluk).
+- Resolved Area-Averaged SRTM Height: Exactly 658.4 m (658.4112 m in GEE).
+- Containing ERA5 Node Orography: 528.6 m (at 13.25°N, 75.25°E) to 812.1 m (at 13.25°N, 75.50°E).
+- Elevation min: 126.7 m (Indabettu); Elevation max: 1235.5 m (Halagadaka Estate); Relief span: 1,108.8 m.
+- Count wholly inside: 27 / 30 (90.0%).
+- Distribution: 21 cooling villages (up to -2.75 °C at Halagadaka Estate) and 9 warming villages (up to +3.01 °C at Thotathady).
+- 22 / 30 villages (73.3%) exceed the ±150 m threshold.
+
+
+ITEM BT — Domain-Mean Orographic Bias & Valley-Siting Test
+----------------------------------------------------------
+1. Domain-Wide Orographic Bias:
+   - Area-weighted mean signed dz_ERA5: +5.56 m.
+   - Unweighted mean signed dz_ERA5: -1.11 m.
+   - In high-relief cells (SRTM range > 500 m, 30 cells): Area-weighted mean signed dz_ERA5 = +25.54 m.
+     (Confirms systematic model crest suppression over mountainous terrain).
+2. Valley Siting Verification:
+   - Low group (dz_SRTM < 0, n=9,516): Median area = 4.86 km^2, IQR = [2.57, 9.05] km^2.
+   - High group (dz_SRTM > 0, n=7,427): Median area = 5.65 km^2, IQR = [2.93, 10.36] km^2.
+   - Confirms that low-lying valley settlements are smaller and more fragmented than high-elevation forest parcels.
+
+
+ITEM BU — Exact Permutation Test for Belgaum Regime Break
+----------------------------------------------------------
+1. Permutation Test (Exact, 14 choose 3 = 364 splits):
+   - Observed absolute mean difference: |1.0474 - 0.5567| = 0.4907.
+   - Splits at least as extreme: exactly 1 (the observed partition).
+   - Two-sided permutation p-value = 1 / 364 = 0.00275 (the attainable minimum).
+2. Non-Parametric Rank Sum:
+   - Mann-Whitney U = 0.0, p-value = 0.00549 (p < 0.01).
+3. Disposition:
+   - Permutation test p=0.00275 quoted as headline result; Student's t (df=12, t=-3.108, p=0.0091) retained as parametric comparison; Welch's test dropped.
+
+
+ITEM BV — Conversion of Stale Citations to Section Anchors
+----------------------------------------------------------
+- Repaired feasibility_gate.md:307 and :527 in logs/item_ag_ar.log to feasibility_gate.md#Table-B and feasibility_gate.md#C.4.
+- Repaired line 91 in logs/item_bc_bl.log to feasibility_gate.md#Update-9 and #Table-A.
+- Confirmed exactly 0 numeric feasibility_gate.md:NNN citations remain across docs/ and logs/.
+
+
+ITEM BW — Final Restatement of the Product Claim
+------------------------------------------------
+Across 16,943 villages, 8.28% (1,403 villages) require a physical lapse-rate correction exceeding ±150 m (~1.0 °C) against ERA5 model orography—4.37% (741 villages) requiring cooling adjustments up to −4.16 °C (Dattathreyapeeta, KA, +640.5 m) and 3.91% (662 villages) requiring warming adjustments up to +3.37 °C (Nagave, MH, −519.0 m)—with a single 0.25° forecast cell at Charmadi Ghat containing 30 settlements spanning 1,108.8 m of relief that require bidirectional corrections of −2.75 °C to +3.01 °C; whereas subgrid topography alone exhibits a net warming asymmetry (559 warming vs 425 cooling) due to valley settlement siting, numerical model smoothing systematically depresses mountain ridges (by +25.5 m in high-relief cells), reversing the balance so that cooling corrections predominate in the operational forecast.
+
+
+COMPLETE 210 POPULATED CELLS TABLE (lat, lon, SRTM_mean, ERA5_orog, diff):
+Lat      Lon      SRTM_m     ERA5_m     Diff_m     Villages
+--------------------------------------------------------
+17.50    73.50    362.3      277.2      -85.04     39      
+17.50    73.75    790.1      592.3      -197.80    66      
+17.50    74.00    642.6      751.3      +108.71    107     
+17.50    74.25    701.6      723.9      +22.29     63      
+17.50    74.50    755.3      736.4      -18.92     36      
+17.50    74.75    624.2      649.7      +25.49     27      
+17.50    75.00    533.3      574.4      +41.07     31      
+17.50    75.25    512.3      510.6      -1.65      25      
+17.50    75.50    461.3      474.4      +13.08     28      
+17.50    75.75    447.3      462.5      +15.21     30      
+17.50    76.00    447.3      449.8      +2.44      38      
+17.50    76.25    459.8      476.4      +16.55     43      
+17.50    76.50    476.5      495.2      +18.65     14      
+17.25    73.50    265.5      231.7      -33.86     78      
+17.25    73.75    738.5      507.3      -231.23    113     
+17.25    74.00    642.1      699.1      +57.01     256     
+17.25    74.25    602.2      647.3      +45.09     141     
+17.25    74.50    660.5      664.2      +3.69      67      
+17.25    74.75    710.7      694.3      -16.42     61      
+17.25    75.00    629.5      624.8      -4.67      57      
+17.25    75.25    597.8      566.6      -31.22     47      
+17.25    75.50    533.8      519.6      -14.16     47      
+17.25    75.75    504.5      479.0      -25.58     43      
+17.25    76.00    446.3      452.3      +6.02      39      
+17.25    76.25    427.9      440.9      +12.97     49      
+17.25    76.50    417.1      441.9      +24.80     38      
+17.00    73.50    175.9      191.1      +15.15     77      
+17.00    73.75    659.7      409.3      -250.37    90      
+17.00    74.00    616.9      648.0      +31.10     177     
+17.00    74.25    579.5      602.3      +22.77     95      
+17.00    74.50    577.2      582.2      +4.92      72      
+17.00    74.75    625.4      650.8      +25.48     73      
+17.00    75.00    621.2      645.5      +24.29     49      
+17.00    75.25    647.8      631.6      -16.17     31      
+17.00    75.50    607.7      606.0      -1.75      41      
+17.00    75.75    545.0      550.4      +5.34      39      
+17.00    76.00    515.2      493.3      -21.82     31      
+17.00    76.25    475.4      456.7      -18.65     51      
+17.00    76.50    466.8      443.4      -23.34     36      
+16.75    73.50    108.6      113.1      +4.44      81      
+16.75    73.75    511.4      306.2      -205.22    91      
+16.75    74.00    601.8      617.8      +16.01     183     
+16.75    74.25    563.8      609.2      +45.33     117     
+16.75    74.50    547.2      542.1      -5.06      77      
+16.75    74.75    550.7      587.8      +37.16     46      
+16.75    75.00    547.3      583.6      +36.31     41      
+16.75    75.25    564.5      595.0      +30.52     27      
+16.75    75.50    593.9      611.3      +17.41     19      
+16.75    75.75    604.4      590.4      -13.99     25      
+16.75    76.00    572.2      571.6      -0.58      34      
+16.75    76.25    528.8      534.0      +5.24      45      
+16.75    76.50    456.1      475.4      +19.32     42      
+16.50    73.50    121.6      82.7       -38.97     68      
+16.50    73.75    492.6      278.5      -214.07    101     
+16.50    74.00    644.2      633.0      -11.22     138     
+16.50    74.25    634.8      648.4      +13.51     124     
+16.50    74.50    657.3      582.2      -75.10     64      
+16.50    74.75    597.7      596.7      -1.02      44      
+16.50    75.00    567.3      573.8      +6.50      54      
+16.50    75.25    558.6      556.9      -1.72      45      
+16.50    75.50    544.7      565.6      +20.86     61      
+16.50    75.75    539.5      564.9      +25.33     51      
+16.50    76.00    550.3      555.1      +4.80      46      
+16.50    76.25    495.7      526.9      +31.28     62      
+16.50    76.50    424.3      472.3      +47.96     41      
+16.25    73.50    69.3       52.7       -16.56     66      
+16.25    73.75    322.5      227.4      -95.04     88      
+16.25    74.00    742.5      579.2      -163.27    95      
+16.25    74.25    713.5      706.7      -6.77      141     
+16.25    74.50    676.7      651.6      -25.17     107     
+16.25    74.75    613.1      639.6      +26.51     68      
+16.25    75.00    628.2      610.9      -17.28     59      
+16.25    75.25    598.0      587.7      -10.38     60      
+16.25    75.50    566.5      562.2      -4.28      59      
+16.25    75.75    547.2      553.7      +6.45      79      
+16.25    76.00    524.2      542.3      +18.16     95      
+16.25    76.25    519.1      521.9      +2.84      94      
+16.25    76.50    504.2      488.2      -16.01     44      
+16.00    73.50    34.0       10.3       -23.67     73      
+16.00    73.75    138.1      167.7      +29.67     122     
+16.00    74.00    642.8      484.2      -158.60    49      
+16.00    74.25    766.2      725.6      -40.55     173     
+16.00    74.50    764.6      728.4      -36.26     113     
+16.00    74.75    701.1      683.7      -17.39     69      
+16.00    75.00    645.5      652.3      +6.80      49      
+16.00    75.25    600.5      602.9      +2.31      62      
+16.00    75.50    575.8      577.0      +1.22      82      
+16.00    75.75    602.3      576.2      -26.13     76      
+16.00    76.00    618.5      576.6      -41.95     83      
+16.00    76.25    569.2      561.6      -7.65      93      
+16.00    76.50    445.3      504.1      +58.86     39      
+15.75    73.75    36.7       38.9       +2.21      115     
+15.75    74.00    271.4      276.8      +5.40      82      
+15.75    74.25    714.8      608.3      -106.58    64      
+15.75    74.50    677.8      743.9      +66.10     122     
+15.75    74.75    682.1      700.5      +18.36     93      
+15.75    75.00    632.4      663.4      +30.94     63      
+15.75    75.25    586.2      614.0      +27.77     49      
+15.75    75.50    591.3      599.4      +8.06      58      
+15.75    75.75    611.2      599.0      -12.21     63      
+15.75    76.00    623.3      609.8      -13.50     101     
+15.75    76.25    534.3      588.5      +54.13     98      
+15.75    76.50    427.7      491.1      +63.41     49      
+15.50    73.75    20.1       11.8       -8.27      40      
+15.50    74.00    91.1       100.0      +8.86      110     
+15.50    74.25    593.5      428.4      -165.12    67      
+15.50    74.50    596.3      637.6      +41.29     102     
+15.50    74.75    617.7      651.9      +34.25     87      
+15.50    75.00    638.6      615.5      -23.07     77      
+15.50    75.25    614.8      627.8      +13.02     39      
+15.50    75.50    674.3      613.2      -61.15     35      
+15.50    75.75    590.4      592.2      +1.82      34      
+15.50    76.00    543.8      599.3      +55.47     57      
+15.50    76.25    508.3      563.2      +54.94     97      
+15.50    76.50    435.7      483.8      +48.14     49      
+15.25    73.75    10.5       7.1        -3.37      3       
+15.25    74.00    135.1      66.7       -68.45     85      
+15.25    74.25    589.5      334.4      -255.07    47      
+15.25    74.50    482.8      518.8      +35.98     68      
+15.25    74.75    522.3      548.2      +25.93     121     
+15.25    75.00    616.8      598.4      -18.45     95      
+15.25    75.25    638.0      626.6      -11.40     63      
+15.25    75.50    609.1      629.4      +20.30     47      
+15.25    75.75    543.9      606.8      +62.92     42      
+15.25    76.00    518.2      564.5      +46.29     57      
+15.25    76.25    582.7      519.8      -62.87     69      
+15.25    76.50    619.9      547.3      -72.64     54      
+15.00    74.00    57.7       59.2       +1.54      18      
+15.00    74.25    291.6      274.5      -17.08     32      
+15.00    74.50    377.4      416.4      +39.07     48      
+15.00    74.75    527.3      500.3      -27.03     48      
+15.00    75.00    591.5      572.1      -19.44     83      
+15.00    75.25    557.5      598.5      +41.01     125     
+15.00    75.50    543.3      590.2      +46.87     79      
+15.00    75.75    578.5      573.6      -4.94      69      
+15.00    76.00    586.0      545.6      -40.40     38      
+15.00    76.25    629.2      560.9      -68.30     41      
+15.00    76.50    650.9      659.3      +8.44      22      
+14.75    74.00    1.0        17.9       +16.91     7       
+14.75    74.25    102.0      119.2      +17.24     65      
+14.75    74.50    428.7      288.9      -139.85    38      
+14.75    74.75    573.8      469.1      -104.72    108     
+14.75    75.00    574.2      569.1      -5.13      141     
+14.75    75.25    608.3      581.7      -26.56     132     
+14.75    75.50    580.5      566.7      -13.77     80      
+14.75    75.75    570.6      570.1      -0.55      54      
+14.75    76.00    633.0      595.3      -37.61     40      
+14.75    76.25    661.7      624.7      -36.99     63      
+14.75    76.50    594.3      645.3      +51.00     27      
+14.50    74.25    14.1       7.0        -7.12      42      
+14.50    74.50    290.3      192.2      -98.16     111     
+14.50    74.75    563.8      458.6      -105.15    172     
+14.50    75.00    610.9      572.5      -38.47     177     
+14.50    75.25    621.2      594.7      -26.45     173     
+14.50    75.50    592.0      589.5      -2.48      118     
+14.50    75.75    582.6      584.2      +1.57      110     
+14.50    76.00    676.7      605.4      -71.27     97      
+14.50    76.25    684.0      666.5      -17.53     134     
+14.50    76.50    590.2      628.3      +38.07     51      
+14.25    74.50    238.3      129.6      -108.71    86      
+14.25    74.75    584.3      456.6      -127.65    97      
+14.25    75.00    626.9      601.2      -25.68     167     
+14.25    75.25    674.0      639.7      -34.32     147     
+14.25    75.50    611.7      624.7      +13.02     121     
+14.25    75.75    635.8      605.3      -30.46     144     
+14.25    76.00    693.5      634.3      -59.10     155     
+14.25    76.25    777.1      722.3      -54.71     154     
+14.25    76.50    619.9      669.2      +49.38     37      
+14.00    74.50    116.7      63.3       -53.39     47      
+14.00    74.75    470.2      370.4      -99.79     49      
+14.00    75.00    635.4      619.5      -15.88     135     
+14.00    75.25    703.9      659.3      -44.52     116     
+14.00    75.50    609.5      647.5      +38.05     174     
+14.00    75.75    754.4      636.5      -117.95    172     
+14.00    76.00    753.0      708.5      -44.44     137     
+14.00    76.25    713.8      754.1      +40.33     140     
+14.00    76.50    648.2      669.5      +21.29     32      
+13.75    74.50    5.7        9.3        +3.62      2       
+13.75    74.75    74.5       164.2      +89.62     47      
+13.75    75.00    599.2      447.1      -152.06    57      
+13.75    75.25    686.9      694.2      +7.33      186     
+13.75    75.50    754.6      687.4      -67.27     81      
+13.75    75.75    845.5      721.8      -123.71    167     
+13.75    76.00    733.7      775.3      +41.60     186     
+13.75    76.25    721.1      750.4      +29.25     146     
+13.75    76.50    717.8      690.8      -26.96     59      
+13.50    74.75    42.9       66.0       +23.13     75      
+13.50    75.00    538.8      335.5      -203.35    33      
+13.50    75.25    832.1      587.2      -244.93    116     
+13.50    75.50    1018.0     870.3      -147.71    63      
+13.50    75.75    992.8      907.5      -85.31     57      
+13.50    76.00    804.0      829.0      +25.00     185     
+13.50    76.25    827.5      772.8      -54.74     186     
+13.50    76.50    820.7      765.7      -54.92     78      
+13.25    74.75    50.3       17.5       -32.85     65      
+13.25    75.00    277.1      280.2      +3.03      37      
+13.25    75.25    658.4      528.6      -129.82    33      
+13.25    75.50    971.5      812.1      -159.44    76      
+13.25    75.75    983.6      1040.1     +56.44     244     
+13.25    76.00    959.5      935.9      -23.63     198     
+13.25    76.25    894.9      849.3      -45.66     248     
+13.25    76.50    829.2      847.1      +17.89     132     
+13.00    74.75    32.0       17.1       -14.88     38      
+13.00    75.00    81.1       83.3       +2.20      41      
+13.00    75.25    130.1      310.2      +180.08    38      
+13.00    75.50    649.4      608.7      -40.66     36      
+13.00    75.75    942.2      889.8      -52.34     128     
+13.00    76.00    907.8      993.2      +85.41     215     
+13.00    76.25    861.2      915.2      +53.96     137     
+13.00    76.50    881.5      876.3      -5.25      88      

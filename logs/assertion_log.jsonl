@@ -1,0 +1,82 @@
+{"timestamp": "2026-08-31T12:47:57.425683Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326.0m; expected 1200-1600m for Mahabaleshwar"}
+{"timestamp": "2026-08-31T12:47:57.426691Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690.0m; expected 400-700m for Satara plateau"}
+{"timestamp": "2026-08-31T12:47:57.427816Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "Mahabaleshwar 1326.0m > Satara 690.0m"}
+{"timestamp": "2026-08-31T12:49:30.705378Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326.0m; expected 1200-1600m for Mahabaleshwar"}
+{"timestamp": "2026-08-31T12:49:30.706588Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690.0m; expected 400-700m for Satara plateau"}
+{"timestamp": "2026-08-31T12:49:30.735209Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "Mahabaleshwar 1326.0m > Satara 690.0m"}
+{"timestamp": "2026-08-31T13:42:31.803721Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-08-31T13:42:31.804730Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-08-31T13:42:31.806735Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-08-31T13:42:33.010974Z", "assertion": "maharashtra_different_chirps_cells", "passed": true, "detail": "Mahabaleshwar cell (18.0, 73.75) vs Satara cell (17.75, 74.0)"}
+{"timestamp": "2026-08-31T13:42:33.011976Z", "assertion": "karnataka_different_chirps_cells", "passed": true, "detail": "Kanakumbi cell (15.75, 74.25) vs Hosaritti cell (14.75, 75.5)"}
+{"timestamp": "2026-08-31T13:55:04.686670Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-08-31T13:55:04.688617Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-08-31T13:55:04.688617Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-08-31T13:55:05.973692Z", "assertion": "maharashtra_different_chirps_cells", "passed": true, "detail": "Mahabaleshwar cell (18.0, 73.75) vs Satara cell (17.75, 74.0)"}
+{"timestamp": "2026-08-31T13:55:05.974718Z", "assertion": "karnataka_different_chirps_cells", "passed": true, "detail": "Kanakumbi cell (15.75, 74.25) vs Hosaritti cell (14.75, 75.5)"}
+{"timestamp": "2026-08-31T16:39:21.142335Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-08-31T16:39:21.169641Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-08-31T16:39:21.170640Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-08-31T16:41:58.558072Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-08-31T16:41:58.560062Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-08-31T16:41:58.561062Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-08-31T16:42:03.973187Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-08-31T16:42:03.974927Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-08-31T16:42:03.976055Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-08-31T16:42:03.977252Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-08-31T17:25:20.179027Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-08-31T17:25:20.180544Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-08-31T17:25:20.181549Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-08-31T17:25:23.996953Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-08-31T17:25:23.997520Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-08-31T17:25:23.998053Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-08-31T17:25:23.999163Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-08-31T19:39:31.664773Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-08-31T19:39:31.687194Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-08-31T19:39:31.688193Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-08-31T19:39:39.171272Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-08-31T19:39:39.172404Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-08-31T19:39:39.173694Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-08-31T19:39:39.174975Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-09-01T16:19:10.614640Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-09-01T16:19:10.615655Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-09-01T16:19:10.616652Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-09-01T16:19:16.600203Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:19:16.600740Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:19:16.601302Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-09-01T16:19:16.601846Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-09-01T16:19:44.790250Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-09-01T16:19:44.791261Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-09-01T16:19:44.792341Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-09-01T16:19:48.385461Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:19:48.386536Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:19:48.387164Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-09-01T16:19:48.388253Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-09-01T16:24:26.921114Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-09-01T16:24:26.922220Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-09-01T16:24:26.922220Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-09-01T16:24:29.803949Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:24:29.804483Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:24:29.805577Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-09-01T16:24:29.806124Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-09-01T16:25:01.481532Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-09-01T16:25:01.481532Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-09-01T16:25:01.483022Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-09-01T16:25:04.102589Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:25:04.103122Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:25:04.103122Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-09-01T16:25:04.104177Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-09-01T16:27:19.820877Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-09-01T16:27:19.820877Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-09-01T16:27:19.821899Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-09-01T16:27:23.646972Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:27:23.647506Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:27:23.648026Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-09-01T16:27:23.648026Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}
+{"timestamp": "2026-09-01T16:31:38.852553Z", "assertion": "mahabaleshwar_elevation_plausible", "passed": true, "detail": "DEM=1326m"}
+{"timestamp": "2026-09-01T16:31:38.852553Z", "assertion": "satara_elevation_plausible", "passed": true, "detail": "DEM=690m"}
+{"timestamp": "2026-09-01T16:31:38.853562Z", "assertion": "maharashtra_windward_higher", "passed": true, "detail": "windward > leeward"}
+{"timestamp": "2026-09-01T16:31:41.553022Z", "assertion": "chirps_dlat_is_005", "passed": true, "detail": "dlat=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:31:41.553022Z", "assertion": "chirps_dlon_is_005", "passed": true, "detail": "dlon=0.05000 deg; required 0.05 +/- 0.001"}
+{"timestamp": "2026-09-01T16:31:41.553561Z", "assertion": "maharashtra_different_cells_at_actual_res", "passed": true, "detail": "Mahabaleshwar vs Satara: 8.2 cells apart"}
+{"timestamp": "2026-09-01T16:31:41.554088Z", "assertion": "karnataka_different_cells_at_actual_res", "passed": true, "detail": "Kanakumbi vs Hosaritti: 32.6 cells apart"}

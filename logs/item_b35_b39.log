@@ -1,0 +1,97 @@
+ITEM B35 THROUGH B39 EXECUTION LOG
+==================================
+
+ITEM B35 — Belgaum Station Breach Resolution
+--------------------------------------------
+1. Exclusion & Station List Restatement:
+   - Station IN009021000 (BELGAUM/SAMBRA) is strictly excluded from validation (circularity and 2004 break).
+   - Valid station count is restated as exactly 5 stations:
+     1. IN009070100: CHITRADURGA (14.23°N, 76.43°E, 733.0 m, plateau)
+     2. IN009090300: GADAG (15.43°N, 75.63°E, 650.0 m, plateau)
+     3. IN009120100: KARWAR (14.80°N, 74.13°E, 4.0 m, coastal)
+     4. IN009120400: HONAVAR (14.28°N, 74.45°E, 9.0 m, coastal)
+     5. IN022030600: GOA/PANJIM (15.48°N, 73.81°E, 60.0 m, coastal)
+2. Re-Emitted Outputs:
+   - outputs/daily_station_validation_series.csv re-emitted with the 5 valid stations only (5,480 rows).
+3. Audit of Files & Log Lines Citing Belgaum as Validation:
+   - emit_b32_series.py:7:
+     * Before: "IN009021000": {"name": "BELGAUM/SAMBRA", "lat": 15.86, "lon": 74.61, "elev": 747.0, ...}
+     * After: Removed. Replaced by VALID_STATIONS (5 stations) in fix_b35_b37_series.py:5–11.
+   - logs/item_b28_b34.log:88:
+     * Before: - Stations: 6 usable stations (BELGAUM/SAMBRA, BIJAPUR, CHITRADURGA, GADAG, KARWAR, HONAVAR).
+     * After: Formally amended to 5 usable stations (CHITRADURGA, GADAG, KARWAR, HONAVAR, GOA/PANJIM).
+   - run_validation.py:15:
+     * Flagged: STATIONS dict contained IN009021000 and IN009021100; marked quarantined.
+
+
+ITEM B36 — Replacement of Assumed Scalars with Real WeatherBench-2 ERA5 Fields
+------------------------------------------------------------------------------
+1. Implementation Path:
+   - Replaced all synthetic scalars (28.0 °C monsoon, 40.0 °C pre-monsoon) with real grid-varying ERA5 2m_temperature fields.
+   - Read from gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr:
+     * Monsoon Date: 2020-07-15 (DOY 196)
+     * Pre-Monsoon Date: 2020-04-30 (DOY 120)
+   - Real temperature arrays stored in data/cache/real_diurnal_temperatures.npz.
+2. Real Downscaling Results Across All 16,943 Villages:
+   - Monsoon (2020-07-15):
+     * Real Coarse Tmax: 22.1 °C to 28.8 °C across domain nodes.
+     * Downscaled ETo: Mean = 2.01 mm/day, Range = [0.00, 3.44] mm/day.
+     * Heat Stress Triggers (Tmax >= 35 °C): 0 / 16,943 (0.00%).
+     * High Irrigation Demand (ETo > 5.0 mm/day): 0 / 16,943 (0.00%).
+   - Pre-Monsoon Hot Season (2020-04-30):
+     * Real Coarse Tmax: 28.9 °C to 40.3 °C across domain nodes.
+     * Downscaled ETo: Mean = 5.39 mm/day, Range = [1.54, 6.28] mm/day.
+     * Heat Stress Triggers (Tmax >= 35 °C): 8,265 / 16,943 (48.78%).
+     * High Irrigation Demand (ETo > 5.0 mm/day): 12,644 / 16,943 (74.63%).
+
+
+ITEM B37 — Village-Level Daily Series & Explicit Observational Flags
+--------------------------------------------------------------------
+1. Station Series Fix (outputs/daily_station_validation_series.csv):
+   - Row Count: Exactly 5,480 rows (5 valid stations x 1,096 days).
+   - Added observation_present flag (1 = observed ground truth present; 0 = missing).
+   - Per-Station Coverage:
+     * Chitradurga: 1,075 present, 21 missing (98.1% coverage)
+     * Gadag: 1,078 present, 18 missing (98.4% coverage)
+     * Karwar: 874 present, 222 missing (79.7% coverage)
+     * Honavar: 1,050 present, 46 missing (95.8% coverage)
+     * Goa/Panjim: 1,079 present, 17 missing (98.4% coverage)
+     * Total Coverage: 5,156 / 5,480 station-days (94.1% coverage).
+2. Village-Level Daily Series (outputs/daily_village_temperature_series.csv):
+   - Row Count: Exactly 36,168 rows (33 flagship villages x 1,096 days).
+   - Fields: date, village_id, village_name, fine_elev_m, era5_elev_m, dz_era5_m, dt_era5_c, corrected_tmax_c, corrected_tmin_c, corrected_tmean_c.
+
+
+ITEM B38 — Karnataka Code Distinction & Retraction of B15 Prefix Truncation
+---------------------------------------------------------------------------
+1. Karnataka LOC_CODE Treatment:
+   - Karnataka state 2001 code is 29; LOC_CODE values (e.g. 070060006000600046) are internal survey identifiers.
+   - In outputs/village_corrections.csv, census_code is explicitly recorded as 'unavailable' for all Karnataka rows (12,366 rows).
+   - Added state_loc_code column to preserve the state identifier without conflating it with Census codes.
+2. Formal Retraction of B15 10-Digit Code Prefix Conclusion:
+   - Recorded in docs/feasibility_gate.md:Retraction Task B38.
+   - In B15, it was claimed that Torane had code 275310429504313500 and that 10-digit codes were prefix truncations.
+   - Feature inspection of mh2.geojson:9058 proves Torane's true CEN_2001 is 275270426403894800 (Satara / Patan).
+   - Prefix 27531 belongs to Sangli district (450 km away).
+   - The conclusion that 10-digit codes are prefix truncations of 18-digit codes is formally RETRACTED.
+
+
+ITEM B39 — One-Line Audits & Assertions
+---------------------------------------
+1. Radiation Justification:
+   - Hargreaves-Samani retained due to reference grass albedo (alpha = 0.23) mismatch against ERA5 model-varying surface albedos and lack of uncoupled ground heat flux, rather than on absence of radiation.
+2. WeatherBench-2 Variable Count:
+   - Confirmed exactly 48 variables (len(ds.data_vars) == 48); corrected typo of 49.
+3. Zero-Delta Invariance & Counts:
+   - Injected dz = 0.0 m -> dt = 0.00 °C strictly unchanged (verified in run_reproduction.py:Assertion 6).
+   - Exact-zero count (|dz| == 0.0000 m): 0 villages.
+   - Near-zero count (|dz| < 0.05 m, rounding to 0.0 m): 11 villages.
+4. Elevation Above Which Clamping Fails (Saturates Permanently):
+   - Above 1,142.0 m, 100% of villages in the JJAS weather regime require clamping (Tfine <= Td).
+5. Companion Node Coverage:
+   - Domain top-decile within-cell SRTM range cutoff is 615.7 m.
+   - Node (17.50, 74.00) (range 527.3 m, offset +8.46 m) is bounded at 17.50°N by the domain mask.
+   - Node (15.00, 74.50) (range 536.9 m, offset -5.18 m) is fully interior (14.875°N to 15.125°N).
+6. B10 Reproduction Runtime & Corruption Test:
+   - Real end-to-end pipeline runtime: 0.18 seconds.
+   - Corruption test (python run_reproduction.py --corrupt): exited with code 1 and loud fatal assertion error (ASSERTION 3 FAILED: Observed max |dz_ERA5| exceeds 981.47 m).

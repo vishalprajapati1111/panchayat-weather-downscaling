@@ -1,0 +1,54 @@
+ITEM C, D, G EXECUTION LOG
+==========================
+
+ITEM C — Era adjustment resolution
+Resolution: WITHDRAW the era-adjusted column.
+Rationale:
+1. The formula raw_ratio * (30yr / era) holds gauge fixed while substituting 30-year CHIRPS
+   in the denominator. This assumes the gauge does not track the anomaly — the opposite
+   of the stated assumption that gauge and satellite co-vary.
+2. Because both numerator and denominator are matched to the exact same years, interannual
+   and decadal wetness anomalies affect both and largely cancel out in the ratio.
+3. Adjusting one side externally introduces an uncalibrated counterfactual rather than a
+   defensible adjustment. Period bias is controlled by period-matching.
+
+ITEM D — Wetness regression at Mahabaleshwar
+n: 5
+slope: -0.00165570 ratio/mm (approx -0.00166)
+intercept: 6.180246
+r: -0.523148 (approx -0.523)
+p: 0.365679 (approx 0.37)
+stderr: 0.00155725
+sum_of_squared_ratio_deviations: 2.9702
+Confirmation: Independent check values confirmed:
+  r = -0.523 (confirmed)
+  p ≈ 0.37 (confirmed: 0.366)
+  slope ≈ -0.00166 ratio/mm (confirmed: -0.001656)
+  sum of squared ratio deviations = 2.9702 (confirmed: 2.9702)
+Interpretation:
+  The gauge-to-CHIRPS bias factor shows no statistically detectable dependence
+  on seasonal wetness (p = 0.37 >> 0.05). However, with n = 5, statistical power
+  is very low, so failure to reject the null cannot be taken as proof of independence.
+
+ITEM G — Month-specific fill
+Summary Table:
+Station              Raw (LB)   Old adj (season)    New adj (month)     Change
+------------------------------------------------------------------------------
+Mahabaleshwar           3.381              3.860              3.789     -0.071
+Kolhapur                1.564              1.866              1.862     -0.004
+Belgaum/Sambra          0.935              1.120              1.099     -0.021
+Sholapur                1.163              1.370              1.375     +0.005
+
+Direction of movement:
+  For Mahabaleshwar (-0.071), Belgaum (-0.021), and Kolhapur (-0.004), the adjusted ratio
+  moves downward because missing days concentrate in drier shoulder months (June and September).
+  For Sholapur (+0.005), missing days are evenly distributed across months.
+
+Upper-estimate characterisation:
+  Because the month-specific fill directly accounts for lower precipitation rates at season edges,
+  the systematic upward bias of uniform season-mean scaling is eliminated. The 'upper estimate'
+  characterisation is no longer required at the same strength, though the filled value remains a
+  modelled sensitivity rather than a direct measurement.
+
+Raw ratios confirmation:
+  Raw ratios (3.381 / 1.564 / 0.935 / 1.163) remain strictly unchanged.

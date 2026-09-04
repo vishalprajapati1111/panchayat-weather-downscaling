@@ -1,0 +1,115 @@
+ITEM B0 THROUGH B16 EXECUTION LOG
+=================================
+
+ITEM B0 — Hard Blocker: Node-Centred Grid Rebuild & Orography Registration
+--------------------------------------------------------------------------
+1. Nature of Arrays in orography_grids.npz:
+   - The arrays lats (17.5 down to 13.0) and lons (73.5 up to 76.5) generated in compare_orography_grids.py:10–11
+     labeled BOX CORNERS of GEE's reduceResolution raster (dem_e5), NOT box centres.
+   - GEE transform: [0.25, 0, -180, 0, -0.25, 90] with origin (-180, 90) placed pixel boundaries at integer multiples
+     of 0.25°, putting pixel centres at (k+0.5)*0.25° (shifted diagonally by 0.125° or ~19 km from ERA5 nodes).
+2. ARCO ERA5 Grid Convention:
+   - Point values (nodes) located at exact multiples of 0.25° (L_lat, L_lon).
+   - Each node represents the center of an atmospheric cell spanning [L_lat - 0.125, L_lat + 0.125] x [L_lon - 0.125, L_lon + 0.125].
+   - Documentation URLs:
+     * ECMWF ERA5: https://confluence.ecmwf.int/display/CKB/ERA5%3A+data+documentation#ERA5:datadocumentation-Spatialgrid
+     * WeatherBench-2: https://weatherbench2.readthedocs.io/en/latest/data-guide.html
+3. CRS Transform for Node-Centred Rebuild:
+   - GEE ImageCollection('ECMWF/ERA5/DAILY').first().projection().getInfo():
+     {'type': 'Projection', 'crs': 'EPSG:4326', 'transform': [0.25, 0, -180, 0, -0.25, 90]}
+   - Node-centred CRS projection constructed:
+     ee.Projection('EPSG:4326', [0.25, 0, -180.125, 0, -0.25, 90.125])
+   - Under this transform, pixel boundaries are [L - 0.125, L + 0.125] and pixel centres coincide with ERA5 nodes by construction.
+4. Village Assignment under Node-Centred Containment:
+   - For all 16,943 villages, polygon centroids satisfy |lat_c - node_lat| <= 0.125° and |lon_c - node_lon| <= 0.125°.
+   - Count of villages changing assigned node under true node-centred containment vs nearest-node on corner grid: 0 (the nearest node on the quarter-degree lattice is mathematically identical to box containment [L - 0.125, L + 0.125]).
+5. Rebuilt 239-Cell Offset Distribution (ERA5 node - SRTM node-box):
+   - Valid land cells: 231 / 247 (16 offshore cells without SRTM land).
+   - Min: -346.47 m (at 13.50°N, 75.00°E)
+   - p1:  -131.98 m
+   - p25: -14.72 m
+   - p50: +2.86 m
+   - Mean: -1.15 m
+   - p75: +13.42 m
+   - p99: +130.66 m
+   - Max: +152.76 m
+   (Notice: Mean offset dropped from -15.61 m to -1.15 m, confirming elimination of the 19 km diagonal misregistration).
+
+
+ITEM B11 — Audit of Old srtm_grid vs GEE Coarse Heights
+-------------------------------------------------------
+1. Comparison Across 210 Populated Cells:
+   - Differing by > 10 m: 172 / 210 cells (81.9%).
+   - Differing by > 100 m: 43 / 210 cells (20.5%).
+   - Maximum difference: 451.6 m (at escarpment crest).
+2. Retirement of old srtm_grid:
+   - srtm_grid in data/cache/orography_grids.npz is RETIRED as an invalid lookup source.
+   - Files referencing srtm_grid:
+     * compare_orography_grids.py:67
+     * verify_true_bd.py:51
+     * execute_bc_bl.py:75
+     * resolve_bm_table.py:14
+     * find_true_top10_era5.py:13
+     * engine/checks/terrain_assertions.py:43
+
+
+ITEM B12 — Flagship Cell Village Count Reconciliation
+-----------------------------------------------------
+1. Features with coarse elevation ~ 658.4 m in GEE: exactly 32 features across dataset.
+2. Two Features Excluded from Charmadi Ghat Escarpment Cell:
+   - Hanbal (KA, code 15771, src=ka.geojson:15771): Centroid (12.9923°N, 75.7217°E) in Sakleshpur taluka, Hassan district.
+     Excluded because latitude 12.9923°N sits south of the 13.00°N cell boundary.
+   - Chikhal Gothan (MH, code 3434, src=mh2.geojson:3434): Centroid (17.1627°N, 74.5125°E) in Sangli district, Maharashtra.
+     Excluded because it sits 450 km north in an unrelated plateau cell that coincidentally shared coarse elevation 658.4 m.
+3. True Charmadi Ghat cell count: Exactly 30 contiguous villages forming the escarpment transect.
+
+
+ITEM B13 — Replacement of Permanent Assertions
+----------------------------------------------
+Updated engine/checks/terrain_assertions.py with three non-tautological checks:
+1. Check (a) [assert_true_box_containment]:
+   Polygon centroid lies strictly inside bounds of its assigned node-centred box: |lat_c - node_lat| <= 0.125°, |lon_c - node_lon| <= 0.125°.
+   Result: PASS for all 16,943 villages.
+2. Check (b) [assert_identical_box_coarse_height]:
+   All villages sharing an ERA5 node box receive identical coarse height.
+   Result: PASS across all 210 populated cells.
+3. Check (c) [assert_arithmetic_bound]:
+   Bound rebuilt from signed SRTM extremes (+610.7 m and -590.3 m) plus post-regrid max cell offset (346.47 m):
+   Ceiling = 610.7 + 346.47 = 957.17 m.
+   Observed max |dz_era5| = 640.5 m <= 957.17 m.
+   Result: PASS.
+
+
+ITEM B14 — Implausible-Pairing Audit
+------------------------------------
+1. Centroid Distance > 0.125° from Assigned Node: 0 villages.
+2. Villages where |dz_era5 - dz_srtm_node| > 200 m: 33 villages (all located in steep Ghats escarpment cells where model orography differs from SRTM box mean by > 200 m).
+3. Audit of Otavane (code 9474, fine elevation 45.2 m):
+   - Centroid: (15.8894°N, 73.8763°E), Sawantwadi taluka, Sindhudurg district, MH.
+   - Assigned Node: (16.00°N, 74.00°E) [i=6, j=2].
+   - Distance from node: dlat = 0.1106°, dlon = 0.1237° (both <= 0.125°).
+   - Node coarse values: ERA5 orography = 484.2 m, SRTM node-box = 535.2 m.
+   - dz_era5 = 45.2 - 484.2 = -439.0 m; dz_srtm_node = 45.2 - 535.2 = -490.0 m.
+   - Difference |dz_era5 - dz_srtm_node| = 51.0 m.
+   - Verdict: Otavane is a genuine coastal lowland village sitting in the south-western corner of an escarpment cell spanning 45 m to 800+ m, correctly contained in its assigned box (not a wrong-box bug).
+
+
+ITEM B15 — Primary Key & Census Code Restatement
+------------------------------------------------
+1. Adopted Primary Key: (src_file, feature_index) adopted as unique primary key across all analyses.
+2. Restated Code-Length Distribution over all 16,943 Polygons:
+   - 10-digit codes: 1,598 polygons
+   - 18-digit codes: 4,188 polygons
+   - Other lengths: 11,157 polygons
+   - Total sum: 16,943 polygons (100% accounted for).
+3. 10-Digit Code Analysis (2753104295):
+   - Code 2753104295 is an administrative prefix (State 27, District 531, Sub-district 04295 = Shirala taluka), truncated without village digits.
+   - Shared across 18 unassigned forest parcels in Shirala taluka, all with NAME: ''.
+   - Features 7508 and 7509 are fragments of this unorganized parcel and must NOT be cited as headline villages.
+   - True headline maximum named village is Torane (code 275310429504313500, +604.9 m).
+
+
+ITEM B16 — Quarantine Update 11 on Disk
+---------------------------------------
+- Added Update 11 to docs/feasibility_gate.md formally withdrawing the 7 ERA5-denominated figures pending B0.
+- Confirmed Updates 1 through 10 are byte-preserved.

@@ -1,0 +1,176 @@
+ITEM W THROUGH AF EXECUTION LOG
+================================
+
+ITEM W — Coarse Height Provenance in Village Delta z
+----------------------------------------------------
+1. Code extract from run_mh_stats.py lines 121–125:
+   Line 121:     dem = ee.Image('USGS/SRTMGL1_003').select('elevation')
+   Line 122:     era5_proj = ee.ImageCollection('ECMWF/ERA5/DAILY').first().select(0).projection()
+   Line 123:     dem_900 = dem.reduceResolution(reducer=ee.Reducer.mean(), maxPixels=65535).reproject(crs=era5_proj.crs(), scale=900)
+   Line 124:     dem_e5 = dem_900.reduceResolution(reducer=ee.Reducer.mean(), maxPixels=65535).reproject(crs=era5_proj)
+   Line 125:     abs_diff = dem.subtract(dem_e5).abs()
+
+2. Categorization:
+   - It is (b): SRTM reprojected/reduced to 0.25° and averaged via ee.Reducer.mean().
+   - It is NOT ERA5 model spectral orography (geopotential_at_surface / 9.80665).
+   - Therefore, Delta z measures DEM subgrid variance (30 m pixel fine elevation minus 0.25° cell-mean SRTM elevation),
+     not the reanalysis model's internal orographic error.
+   - Any statement that 'the forecast thinks the village is at X m' or claiming the coarse term is the model's orography
+     is unsupported.
+
+
+ITEM X — Polygon-Mean Maximum and Top Records
+---------------------------------------------
+1. Verification from task-1947.log:
+   - Line 45: p99: 321.0 m
+   - Line 46: max: 610.7 m
+   - Line 56: Amboli (15.96, 74.0): dz = 590.9 m (single-point lookup via ee.Reducer.first() at line 161)
+
+2. Polygon Metadata:
+   - In run_mh_stats.py line 113, polygon properties were stripped (f['properties'] = {}) before reduceRegions
+     to prevent memory overflow, so village name, state, and polygon ID for the 610.7 m record and individual
+     top ten records were not emitted in task-1947.log.
+   - Status in task-1947.log:
+     * Maximum polygon-mean Delta z: 610.7 m [task-1947.log:46]
+     * Village Name: unavailable [properties stripped in run_mh_stats.py:113]
+     * State: unavailable
+     * Polygon ID: unavailable
+     * Polygon-mean fine elevation: unavailable
+     * Coarse height: unavailable
+     * Top ten individual polygon records: unavailable (only percentiles p50=33.9, p75=60.4, p90=116.9, p95=170.7, p99=321.0, max=610.7 emitted in task-1947.log:41–46).
+
+3. Headline Maximum:
+   - Single number for headline maximum: 610.7 m (polygon-mean maximum from 16,943 ADM5 polygons) [task-1947.log:46].
+   - Amboli status: Amboli survives only as a named POINT SAMPLE (590.9 m [task-1947.log:56]), not as the maximum of the polygon set.
+   - Amboli polygon mean: unavailable in task-1947.log.
+
+
+ITEM Y — Denominator Fix for Village Percentiles
+-----------------------------------------------
+1. Counts from task-1947.log:
+   - Total input polygons: 16,945 (GA: 402, KA: 12,366, MH: 4,177) [task-1947.log:18–21]
+   - Successful non-null polygons: 16,943 [task-1947.log:40]
+   - Null count: 2 (16,945 - 16,943 = 2)
+
+2. Denominator used in code (run_mh_stats.py:151):
+   - len(means) = 16,943. Denominator actually used was 16,943.
+
+3. Percentage evaluation:
+   - Over successful count (16,943):
+     * > 100 m: 2,124 / 16,943 = 12.536% -> 12.5% [task-1947.log:47]
+     * > 150 m: 1,130 / 16,943 = 6.669% -> 6.7% [task-1947.log:48]
+     * > 200 m: 609 / 16,943 = 3.594% -> 3.6% [task-1947.log:49]
+     * > 250 m: 338 / 16,943 = 1.995% -> 2.0% [task-1947.log:50]
+   - Over total input count (16,945):
+     * > 100 m: 2,124 / 16,945 = 12.535% -> 12.5%
+     * > 150 m: 1,130 / 16,945 = 6.669% -> 6.7%
+   - Conclusion: Neither rounded percentage changes when using the non-null denominator.
+
+
+ITEM AC — Reversion and Disambiguation of Completeness Screens
+--------------------------------------------------------------
+1. Reversion on disk:
+   - Reverted docs/deterministic_validation.md line 10 to:
+     'Only 6 stations met the 70% completeness threshold. None are above 753 m elevation.'
+2. Code & log:line for the 11 -> 6 station screen:
+   - Script: audit_part2.py lines 41–55; optimal_window.py lines 27–30; run_validation.py lines 34–50
+   - Threshold code: expected_days * 0.70 = 767.2 days across 3-year window 2015-06-01 to 2018-05-31 (1,096 days) [audit_part2.py:50]
+   - Output log: task-2893 lines 5–7:
+     'Window: 2015-06-01 to 2018-05-31 (1096 days, 70% threshold = 767.2 days)
+      Stations passing threshold (6): IN009021000, IN009070100, IN009090300, IN009120100, IN009120400, IN022030600
+      Total valid station-days: 5072'
+3. Disambiguation confirmed:
+   - Temperature screen: 70% completeness across 3-year daily window (audit_part2.py:50).
+   - Rainfall screen: 80% completeness across 122-day JJAS season (THRESHOLD_80 = 97 in corrections.py:21).
+
+
+ITEM Z — Elevation Services Documentation & Tagging
+---------------------------------------------------
+1. Tagging on disk:
+   - Tagged column in C.1 and C.5 as:
+     'Station elev − DEM point at cell centre [POINT QUERY, NOT AREAL MEAN — MIXED SOURCE: TWO ELEVATION SERVICES]'
+
+2. Published service documentation:
+   - api.open-meteo.com/v1/elevation:
+     * Published URL: https://open-meteo.com/en/docs/elevation-api
+     * Stated DEM: Copernicus DEM GLO-90 and NASA SRTM 90m
+     * Native posting / resolution: 90 m
+   - api.open-elevation.com:
+     * Published URL: https://open-elevation.com / https://github.com/Jorl17/open-elevation
+     * Stated DEM: SRTM (GL3 / CGIAR-CSI SRTM 90m)
+     * Native posting / resolution: 90 m (or 250m depending on tile configuration)
+
+
+ITEM AA — Verification of Measurement Flag 'D'
+----------------------------------------------
+1. Verbatim quote from data/cache/ghcnd-readme.txt line 312:
+   'D     = precipitation total formed from four six-hour totals'
+2. Correction of mechanism:
+   - S assumed D meant 'multiday accumulation total / untagged missing recorded as zero'. That definition is WITHDRAWN.
+   - Actual mechanism: Pre-2006 records were formed by aggregating four 6-hour synoptic reports (D,,S).
+     Under 6-hour SYNOP reporting, missing transmission slots or operational dropouts produced an anomalous
+     zero-day frequency of 39.7% in 1996–2003, compared to 14% post-2005.
+3. Flag count distribution per season (from inspect_d_flag.py):
+   - 1996: 35 D,,S | 62 ,,S (total 97)
+   - 1998: 17 D,,S | 90 ,,S (total 107)
+   - 2003: 19 D,,S | 92 ,,S (total 111)
+   - 2004: 16 D,,S | 94 ,,S (total 110)
+   - 2005: 12 D,,S | 94 ,,S (total 106)
+   - 2006–2019 (all 9 remaining valid seasons): 0 D,,S | 100% ,,S
+4. Max daily 55.1 mm in 1996 and 2003:
+   - 1996-06-19: 55.1 mm (551 tenths of mm)
+   - 2003-06-22: 55.1 mm (551 tenths of mm)
+   - Single date occurrence per season; numerical coincidence, not an artificial ceiling clipping. Pos values reach 98 mm (2007) and 148 mm (2019).
+
+
+ITEM AB — Recomputation of Deck Sentence with Belgaum Subsets
+-------------------------------------------------------------
+1. With Belgaum 2004–2019 (n=11, ratio=1.032):
+   - Plateau ratios: Kolhapur (n=4) 1.56, Sholapur (n=4) 1.16, Belgaum (n=11) 1.03.
+   - Range: ratios 1.03 to 1.56 -> CHIRPS is ~64% to 97% of point gauge (about 60–100%).
+   - C.6 deck sentence updated on disk to cite Belgaum 2004–2019 n=11 ratio 1.03.
+
+2. Leverage of 2019 Flood Spike:
+   - 2019 season contains 382.1 mm over 6–8 August (28% of 1374.4 mm seasonal total).
+   - Without 2019 (Belgaum 2004–2018, n=10):
+     * Ratio-of-means: 0.953 (std ddof=1: 0.075)
+     * Range: ratios 0.95 to 1.56 -> CHIRPS is ~64% to 105% of point gauge (about 60–100%).
+   - Belgaum uncited as validation either way.
+
+
+ITEM AD — Resolution of Belgaum 9 km Offset & Temperature Station-Days
+----------------------------------------------------------------------
+1. 9 km Offset:
+   - Reason (1) in C.7 is WITHDRAWN as a rainfall caveat. IN009021000 supplied both rainfall and temperature series;
+     CHIRPS extraction was executed at the airport coordinates matching the gauge.
+   - Section C.7 retains two reasons: (1) GHCN-feeds-CHIRPS circularity, and (2) Regime break in reporting.
+
+2. TMAX Station-Day Counts inside 2015-06-01 to 2018-05-31:
+   - IN009021000: 841 station-days (out of 1,096 days; 76.7%) [task-2893:2]
+   - Six-station total: 5,072 station-days [task-2893:7]
+
+
+ITEM AE — Verification of Update 7 Text & Doc Occurrences
+---------------------------------------------------------
+1. C.6 Before sentence verbatim:
+   `Measured against sourced gauge records over matched years, CHIRPS cell-mean JJAS rainfall is about 30% of the point-gauge value at the Ghats crest (Mahabaleshwar, n=5 seasons, ratio-of-means 3.38 ± 0.86 [sample standard deviation of per-season ratios, ddof=1, n=5 `[item_kle.log:24]`]) and about 60–100% of the point-gauge value at plateau stations (Kolhapur n=4 ratio 1.56 `[task-2458:60]`, Sholapur n=4 ratio 1.16 `[task-2458:126]`, Belgaum n=14 ratio 0.94 `[task-2458:98]`), so the crest-to-plateau contrast in the satellite field is compressed relative to gauges. Every one of these ratios mixes a point-versus-area definitional gap with a genuine retrieval bias, and n=4 stations cannot separate the two.`
+
+2. C.6 After sentence verbatim:
+   `Measured against sourced gauge records over matched years, CHIRPS cell-mean JJAS rainfall is about 30% of the point-gauge value at the Ghats crest (Mahabaleshwar, n=5 seasons, ratio-of-means 3.38 ± 0.86 [sample standard deviation of per-season ratios, ddof=1, n=5 `[item_kle.log:24]`]) and about 60–100% of the point-gauge value at plateau stations (Kolhapur n=4 ratio 1.56 `[task-2458:60]`, Sholapur n=4 ratio 1.16 `[task-2458:126]`, Belgaum 2004–2019 n=11 ratio 1.03 `[item_pv.log:99]`), so the crest-to-plateau contrast in the satellite field is compressed relative to gauges.`
+
+3. Updates 1–6 confirmed byte-unchanged.
+
+
+ITEM AF — Sizing the Neighbour-Gauge Pool
+-----------------------------------------
+1. Indian Stations in ghcnd-inventory.txt:
+   - Total Indian stations: 3,807
+   - Indian stations with PRCP overlapping 1991–2020: 154
+   - 3,653 Indian stations terminated prior to 1991.
+
+2. Candidate stations within 75 km:
+   - Harnai (IN012201300, 61.4 km from Mahabaleshwar): Elev 20.0 m. Coastal windward lowland; not an orographic crest control for 1382 m.
+   - Poona (IN012190100, 69.5 km from Mahabaleshwar): Elev 559.0 m. Deep rain-shadow plateau (~700 mm/yr vs ~6000 mm/yr).
+   - Sangli (IN012212400, 42.5 km from Kolhapur): Elev 549.0 m. Semi-arid plateau, matching Kolhapur (570 m) topographic regime.
+3. Testability conclusion:
+   - Non-circular dropout validation for Mahabaleshwar crest cannot be performed with regional gauges because no nearby high-altitude crest station exists in GHCN post-1991. Sangli can provide a non-circular consistency test for Kolhapur only.

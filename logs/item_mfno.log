@@ -1,0 +1,173 @@
+ITEM M, F, N, O EXECUTION LOG
+=============================
+
+ITEM M — Belgaum Station Citation and Metadata
+-----------------------------------------------
+1. Literal lines from data/cache/ghcnd-stations.txt:
+Line 37666: IN009021000  15.8500   74.6170  747.0    BELGAUM/SAMBRA                         43198
+Line 37667: IN009021001  15.7700   75.1000  669.0    SAUNDATTI
+Line 37668: IN009021100  15.8500   74.5330  753.0    BELGAUM                                43197
+
+Metadata breakdown:
+- Station IN009021000:
+  * Name: BELGAUM/SAMBRA
+  * Lat: 15.8500°N
+  * Lon: 74.6170°E
+  * Elevation: 747.0 m
+  * Role: Rainfall gauge station (airport) behind the 14 valid seasons (1996–2019)
+- Station IN009021100:
+  * Name: BELGAUM
+  * Lat: 15.8500°N
+  * Lon: 74.5330°E
+  * Elevation: 753.0 m
+  * Role: Town observatory / temperature endpoint
+
+2. Verification of C.5 citation:
+- The Section C.5 rainfall row cites '747 m [ghcnd:37666]'.
+- Line 37666 corresponds to IN009021000 (747.0 m).
+- This is the rainfall gauge whose observations were analyzed. The citation and elevation belong
+  to the correct rainfall station (IN009021000) and require no correction.
+
+3. Confirmation of Section C.7 pair offset:
+- The 9 km gauge-to-endpoint offset in Section C.7 compares:
+  * Rainfall gauge IN009021000 at (15.8500°N, 74.6170°E)
+  * Endpoint IN009021100 at (15.8500°N, 74.5330°E)
+  * Distance: delta_lon = 0.084° ≈ 9.0 km
+- Confirmed: The 9 km offset refers to the correct pair.
+
+
+ITEM F — Relief Column Renaming & Peak Relief Status
+----------------------------------------------------
+1. Renaming:
+   - The values 56, 30, 10, 35 m represent the difference between the station instrument point elevation
+     and the containing 0.05° CHIRPS cell mean elevation (queried at cell centre).
+   - Column in Section C.1 renamed to: 'Station elev − cell mean'
+   - Column in Section C.5 renamed to: 'Station − cell mean'
+
+2. Peak-minus-cell-mean computation:
+   - Status: UNAVAILABLE [logs/item_mfno.log:40–43]
+   - Reason: No 30 m SRTM DEM raster grid is stored in the workspace or cache (documented as 'Not yet fetched'
+     in docs/PROVENANCE.md). Individual cell-mean values were obtained via point queries (gate.py / open-elevation API)
+     without downloading the full raster tiles. Therefore, maximum (peak) pixel elevation within each 0.05°
+     cell cannot be evaluated from local data.
+   - Values in Section C.5:
+     * Mahabaleshwar: unavailable [item_mfno.log:40]
+     * Kolhapur: unavailable [item_mfno.log:41]
+     * Belgaum/Sambra: unavailable [item_mfno.log:42]
+     * Sholapur: unavailable [item_mfno.log:43]
+
+3. Deck Sentence Modification:
+   - The clause 'Every one of these ratios mixes a point-versus-area definitional gap with a genuine retrieval bias,
+     and n=4 stations cannot separate the two' has been REMOVED from the Section C.6 deck sentence until peak relief
+     is sourced from 30 m DEM rasters.
+
+
+ITEM N — Audit of Standard Deviations for Kolhapur, Belgaum, and Sholapur
+------------------------------------------------------------------------
+Per-season data and ddof=1 sample standard deviation derivations (from check_n_std.py):
+
+1. Kolhapur (IN012131800):
+   Year  Days   Gauge mm   CHIRPS mm      Ratio  Log:line
+   -----------------------------------------------------------------
+   2017    98      766.0       573.1      1.337  task-2458:52
+   2018    97      873.1       560.5      1.558  task-2458:53
+   2019   104     1515.5       734.0      2.065  task-2458:54
+   2020   108     1052.5       821.5      1.281  task-2458:55
+   -----------------------------------------------------------------
+   n = 4
+   Sum of squared deviations (SS) = 0.382319 [item_mfno.log:65]
+   Variance (ddof=1) = 0.382319 / 3 = 0.127440
+   Sample std (ddof=1) = sqrt(0.127440) = 0.356987 ≈ 0.357 [REPRODUCED]
+   Population std (ddof=0) = sqrt(0.382319 / 4) = 0.309160 ≈ 0.309 [task-2458:64]
+
+2. Belgaum/Sambra (IN009021000):
+   Year  Days   Gauge mm   CHIRPS mm      Ratio  Log:line
+   -----------------------------------------------------------------
+   1996    97      420.0       760.6      0.552  task-2458:80
+   1998   107      521.7       893.5      0.584  task-2458:81
+   2003   111      263.0       492.6      0.534  task-2458:82
+   2004   110      526.7       540.2      0.975  task-2458:83
+   2005   106      915.0      1131.7      0.809  task-2458:84
+   2006    99      820.8       818.2      1.003  task-2458:85
+   2007   100      993.3      1146.5      0.866  task-2458:86
+   2008    99      615.9       580.6      1.061  task-2458:87
+   2011   101      572.2       579.1      0.988  task-2458:88
+   2013   109      734.6       718.9      1.022  task-2458:89
+   2014    99      690.2       687.2      1.004  task-2458:90
+   2016    97      671.8       674.0      0.997  task-2458:91
+   2018    98      566.4       582.1      0.973  task-2458:92
+   2019   101     1374.4       756.7      1.816  task-2458:93
+   -----------------------------------------------------------------
+   n = 14
+   Sum of squared deviations (SS) = 1.270097 [item_mfno.log:91]
+   Variance (ddof=1) = 1.270097 / 13 = 0.0976998
+   Sample std (ddof=1) = sqrt(0.0976998) = 0.312570 ≈ 0.313 [REPRODUCED]
+   Population std (ddof=0) = sqrt(1.270097 / 14) = 0.301200 ≈ 0.301 [task-2458:95]
+
+3. Sholapur (IN012230300):
+   Year  Days   Gauge mm   CHIRPS mm      Ratio  Log:line
+   -----------------------------------------------------------------
+   1993    98      450.9       417.8      1.079  task-2458:118
+   1994   107      476.5       449.7      1.060  task-2458:119
+   1995   107      778.9       525.9      1.481  task-2458:120
+   1996   101      569.8       564.1      1.010  task-2458:121
+   -----------------------------------------------------------------
+   n = 4
+   Sum of squared deviations (SS) = 0.142149 [item_mfno.log:106]
+   Variance (ddof=1) = 0.142149 / 3 = 0.047383
+   Sample std (ddof=1) = sqrt(0.047383) = 0.217676 ≈ 0.218 [REPRODUCED]
+   Population std (ddof=0) = sqrt(0.142149 / 4) = 0.188513 ≈ 0.189 [task-2458:120]
+
+Summary of Audit:
+- Kolhapur: n=4, SS=0.382319, std(ddof=1)=0.357 [MATCH]
+- Belgaum/Sambra: n=14, SS=1.270097, std(ddof=1)=0.313 [MATCH]
+- Sholapur: n=4, SS=0.142149, std(ddof=1)=0.218 [MATCH]
+- Discrepancies: None flagged. All reproduce exactly from per-season ratios.
+
+
+ITEM O — Inspection of Neighbour Gauge Cache Records
+----------------------------------------------------
+Audit of cached station files (from inspect_neighbours.py):
+
+1. Satara (IN012220100):
+   - File size: 1,856,450 bytes (1.86 MB)
+   - Total PRCP observations: 23,798
+   - First and last year of record: 1901 to 1970 (70 years)
+   - JJAS observations in 1991–2020: 0
+   - Classification: NO DATA IN WINDOW (Terminated in 1970; not 'no data at all')
+
+2. Radhanagari (IN012130200):
+   - File size: 1,041,734 bytes (1.04 MB)
+   - Total PRCP observations: 12,550
+   - First and last year of record: 1934 to 1970 (37 years)
+   - JJAS observations in 1991–2020: 0
+   - Classification: NO DATA IN WINDOW (Terminated in 1970; not 'no data at all')
+
+3. Hubballi (IN009090200):
+   - File size: 0 bytes (file does not exist in cache)
+   - Total PRCP observations: 0
+   - Record span: N/A
+   - Classification: NO DATA IN CACHE
+
+Overlap Analysis with Stations Requiring Dropout Testing:
+- Mahabaleshwar (dropout testing window: 2016–2020):
+  * Satara (1901–1970): No overlap
+  * Radhanagari (1934–1970): No overlap
+  * Hubballi (absent): No overlap
+- Belgaum/Sambra (dropout testing window: 1996–2019):
+  * Satara (1901–1970): No overlap
+  * Radhanagari (1934–1970): No overlap
+  * Hubballi (absent): No overlap
+- Sholapur (dropout testing window: 1993–1996):
+  * Satara (1901–1970): No overlap
+  * Radhanagari (1934–1970): No overlap
+  * Hubballi (absent): No overlap
+- Kolhapur (dropout testing window: 2017–2020):
+  * Satara (1901–1970): No overlap
+  * Radhanagari (1934–1970): No overlap
+  * Hubballi (absent): No overlap
+
+Conclusion:
+No neighbour station overlaps any target station's valid observation window because the available
+historical GHCN gauges in the region ceased recording in 1970. Non-circular dropout validation
+cannot be conducted using the current GHCN cache.

@@ -1,0 +1,93 @@
+ITEM H, I, J EXECUTION LOG
+==========================
+
+ITEM H — Fix G's Baseline
+-------------------------
+Earlier tables:
+- Table C / Section C.5 (from task-2458) used the retracted rounded-days baseline:
+  Mahabaleshwar: 3.860 (from 107 d)
+  Kolhapur: 1.866 (from 102 d)
+  Belgaum: 1.120 (from 102 d)
+  Sholapur: 1.370 (from 103 d)
+- Update 6 / item0a.py established the correct exact-mean-days baseline:
+  Mahabaleshwar: 3.855 (mean days: 107.00)
+  Kolhapur: 1.875 (mean days: 101.75)
+  Belgaum: 1.114 (mean days: 102.43)
+  Sholapur: 1.374 (mean days: 103.25)
+
+Recomputed G change figures:
+Station             Raw (LB)   Correct Baseline (item0a)   New Adj (month fill)   Change vs Correct   Change vs Retracted (task-2458)
+-------------------------------------------------------------------------------------------------------------------------------------
+Mahabaleshwar          3.381                       3.855                  3.789              -0.066                            -0.071
+Kolhapur               1.564                       1.875                  1.862              -0.013                            -0.004
+Belgaum/Sambra         0.935                       1.114                  1.099              -0.015                            -0.021
+Sholapur               1.163                       1.374                  1.375              +0.001                            +0.005
+
+Raw ratios confirmed unaffected: 3.381, 1.564, 0.935, 1.163.
+
+
+ITEM I — Month Fill Verification and Monthly Rates
+--------------------------------------------------
+Monthly rainfall rates, missing days filled, and mm added per station:
+
+1. Mahabaleshwar (5 valid seasons: 2016–2020; season mean daily rate = 52.30 mm/day):
+   - Jun: rate = 26.77 mm/day | missing filled = 24 days total (4.80/yr) | mm added = 642.4 mm (128.5 mm/yr)
+   - Jul: rate = 73.44 mm/day | missing filled = 16 days total (3.20/yr) | mm added = 1175.0 mm (235.0 mm/yr)
+   - Aug: rate = 75.84 mm/day | missing filled = 12 days total (2.40/yr) | mm added = 910.1 mm (182.0 mm/yr)
+   - Sep: rate = 27.97 mm/day | missing filled = 23 days total (4.60/yr) | mm added = 643.3 mm (128.7 mm/yr)
+
+   Monthly Rate Comparison at Mahabaleshwar:
+   - Jun (26.77 mm/day) and Sep (27.97 mm/day) are NOT within ~10% of Jul (73.44 mm/day) and Aug (75.84 mm/day).
+     They are ~2.8x lower (a ~64% drop in daily intensity).
+   - Cause of the seemingly modest shift (-0.066 on 3.855):
+     The station's record is 87.7% complete (107.0 / 122 days present per season). Across 5 seasons, missing days
+     average only 15.0 days/year across the entire season.
+     - Uniform season fill added: 15.0 days * 52.30 mm/day = 784.5 mm/yr.
+     - Month-specific fill added: 128.5 (Jun) + 235.0 (Jul) + 182.0 (Aug) + 128.7 (Sep) = 674.2 mm/yr.
+     - Net gauge difference: 784.5 - 674.2 = 110.3 mm/yr.
+     - Relative to total season precipitation (~6270 mm/yr), 110.3 mm is only 1.76% of total rainfall.
+     - Scaled by CHIRPS denominator (1655 mm), delta_ratio = -110.3 / 1655 = -0.0666.
+     Therefore, the shift is -0.066 because 88% of seasonal rainfall is fixed by direct observations,
+     bounding the leverage of the fill adjustment.
+
+2. Kolhapur (4 valid seasons: 2017–2020; season mean daily rate = 10.34 mm/day):
+   - Jun: rate =  8.00 mm/day | missing filled = 22 days total (5.50/yr) | mm added = 176.0 mm (44.0 mm/yr)
+   - Jul: rate = 10.85 mm/day | missing filled = 14 days total (3.50/yr) | mm added = 151.9 mm (38.0 mm/yr)
+   - Aug: rate = 12.48 mm/day | missing filled = 14 days total (3.50/yr) | mm added = 174.7 mm (43.7 mm/yr)
+   - Sep: rate =  9.63 mm/day | missing filled = 31 days total (7.75/yr) | mm added = 298.6 mm (74.7 mm/yr)
+
+3. Belgaum/Sambra (14 valid seasons: 1996–2019; season mean daily rate = 6.75 mm/day):
+   - Jun: rate = 6.55 mm/day | missing filled = 103 days total (7.36/yr) | mm added = 674.9 mm (48.2 mm/yr)
+   - Jul: rate = 7.84 mm/day | missing filled =  34 days total (2.43/yr) | mm added = 266.6 mm (19.0 mm/yr)
+   - Aug: rate = 7.37 mm/day | missing filled =  37 days total (2.64/yr) | mm added = 272.8 mm (19.5 mm/yr)
+   - Sep: rate = 4.83 mm/day | missing filled = 100 days total (7.14/yr) | mm added = 483.0 mm (34.5 mm/yr)
+
+4. Sholapur (4 valid seasons: 1993–1996; season mean daily rate = 5.51 mm/day):
+   - Jun: rate = 5.68 mm/day | missing filled = 22 days total (5.50/yr) | mm added = 124.9 mm (31.2 mm/yr)
+   - Jul: rate = 6.50 mm/day | missing filled = 17 days total (4.25/yr) | mm added = 110.5 mm (27.6 mm/yr)
+   - Aug: rate = 4.20 mm/day | missing filled = 17 days total (4.25/yr) | mm added =  71.3 mm (17.8 mm/yr)
+   - Sep: rate = 5.70 mm/day | missing filled = 19 days total (4.75/yr) | mm added = 108.2 mm (27.1 mm/yr)
+
+
+ITEM J — Era Withdrawal Cascade & Label Justification
+-----------------------------------------------------
+1. Era-derived numbers removed from disk:
+   - 1.828, 0.880, 1.388, 3.389 (all occurrences removed, count = 0)
+   - Anomaly percentages (+6.2%, -14.4%, -16.2%, -0.2%) removed (count = 0)
+
+2. Locations touched in docs/feasibility_gate.md:
+   - Update 6 Section 0b: Era adjustments recorded as WITHDRAWN across all stations due to
+     methodological contradiction (assuming gauge does not track anomaly) and matched-period cancellation.
+   - Section C.4: Retitled 'C.4 — Era Bias Check (WITHDRAWN)'. Column 'Era-adj ratio' and anomaly rows removed.
+   - Section C.5 Summary Table: Removed 'Era %' column. Updated sensitivity baseline and month fill values.
+   - Section C.7: Deleted reason (3) of Belgaum caveat. Reasons (1) 9 km airport offset and (2) GHCN-feeds-CHIRPS
+     circularity remain confirmed. Conclusion that Belgaum is never cited as validation is confirmed unchanged.
+
+3. 'Upper estimate, not a bound' label retention:
+   - Retained at full strength on all adjusted ratios.
+   - Revised justification: Any fill assumes missing days rained like recorded days. If observations are
+     missed due to severe weather or storm outages, missingness correlates with rainfall.
+   - Status: Untested.
+   - Testability: Testable in principle by matching station dropout dates against daily satellite rainfall
+     or surrounding radar/gauge networks to check if dropouts coincide with heavy rain events, but cannot
+     be tested from the isolated station record alone.

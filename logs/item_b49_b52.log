@@ -1,0 +1,105 @@
+ITEM B49 THROUGH B52 & UPDATE 14 EXECUTION LOG
+==============================================
+
+ITEM B49 — Resolution of the Feature-Index Primary Key
+------------------------------------------------------
+1. Feature Counts per File: Raw vs In-Domain Retained:
+   - ga.geojson:
+     * Raw Feature Count in GeoJSON: 402 features
+     * In-Domain Retained Count: 402 features (100% inside domain)
+   - ka.geojson:
+     * Raw Feature Count in GeoJSON: 29,731 features (full state)
+     * In-Domain Retained Count: 12,366 features (western domain subset)
+   - mh1.geojson:
+     * Raw Feature Count in GeoJSON: 25,000 features (state part 1)
+     * In-Domain Retained Count: 225 features (south-western tip inside domain)
+   - mh2.geojson:
+     * Raw Feature Count in GeoJSON: 23,926 features (state part 2)
+     * In-Domain Retained Count: 3,950 features (Western Ghats subset inside domain)
+   - Domain Total: 16,943 retained features (402 + 12,366 + 225 + 3,950).
+   - What B46 Reported: B46 reported the IN-DOMAIN RETAINED counts, but erroneously labelled them as total file counts.
+2. Semantics of feature_index:
+   - feature_index is the 0-based RAW FEATURE POSITION within the original state GeoJSON file, NOT a post-filter position.
+   - That is why indices exceed the retained count:
+     * mh1.geojson:24119 is the 24,119th feature of the 25,000 raw features in mh1.geojson.
+     * ka.geojson:21888 (Muduba) is the 21,888th feature of the 29,731 raw features in ka.geojson.
+     * ka.geojson:21692 (Dattathreyapeeta) is the 21,692nd feature in ka.geojson.
+     * mh2.geojson:10694 (Nagave) is the 10,694th feature of the 23,926 raw features in mh2.geojson.
+3. Verbatim Demonstration of mh1.geojson Feature 24119:
+   - Name Property: 'NAME': 'Kudal' (SUB_DIST: 'Solapur South', DISTRICT: 'Solapur', STATE: 'Maharashtra', TYPE: 'village')
+   - Census 2001 Code: 'CEN_2001': '275260425303758800'
+   - Polygon Centroid: (17.38721°N, 75.90369°E)
+   - Assigned Node: (17.50°N, 76.00°E) [node_i=0, node_j=10]
+   - Elevation: Fine = 424.5 m, ERA5 = 449.8 m, dz_era5_m = -25.2 m, dt_era5_c = +0.16 °C.
+4. Origin of the "2,847 / 13,694" Figures:
+   - Traced to an earlier exploratory Ghats filter: 2,847 was the count of Karnataka villages west of 75.01°E (the coastal/Ghats strip).
+   - 13,694 was the domain remainder (16,943 - 402 - 2,847 = 13,694).
+   - In B28, this longitudinal partition was mistakenly transcribed as the file split.
+5. Primary Key Integrity:
+   - The primary key (src_file, feature_idx) remains 100% unique across all 16,943 rows in outputs/village_corrections.csv.
+   - Tested 100 random rows against raw GeoJSON files: 0 mismatches. Primary key semantics have not changed.
+   - File MD5: 42157952f3441d1ce6fb06910c032c6b.
+6. Maharashtra Total Correction:
+   - Item AQ's cited total of 4,177 Maharashtra features (logs/item_ag_ar.log:177, logs/item_as_bb.log:31) included 2 null polygons that failed GEE reduction.
+   - The authoritative in-domain Maharashtra total is 4,175 villages, which formally supersedes 4,177.
+
+
+ITEM B50 — Edge-Row Treatment (Row i=0, Latitude 17.50°N)
+---------------------------------------------------------
+1. Village Count on Edge Row:
+   - Exactly 547 villages (3.23% of domain) are assigned to row i=0 (17.50°N).
+2. Admissibility & Difference in Treatment:
+   - Village-Level Point Downscaling: Edge row is FULLY ADMISSIBLE. The ERA5 atmospheric model runs globally (untruncated grid point), the SRTM DEM at the village centroid is untruncated, and the lapse rate correction Delta T = -Gamma * (z_fine - z_ERA5) is strictly pointwise.
+   - Node-Level Orographic Areal Deficit (B47): Edge row is PROBLEMATIC. Evaluating the spatial integral over the 0.25° x 0.25° box [17.375°N, 17.625°N] is truncated at 17.50°N by the northern boundary of the domain mask, resulting in an asymmetric half-box areal average. That is why B47 dropped node (17.50, 74.00).
+3. Next-Highest Village Tmax Off Row i=0 (i >= 1, Latitude < 17.375°N):
+   - Monsoon (2017-07-15, in-window):
+     * Village Name: Mannur
+     * Village ID: ka.geojson:27298
+     * Node: (17.25°N, 76.00°E) [node_i=1, node_j=10]
+     * Fine Elev = 419.1 m, ERA5 Elev = 452.3 m, dz = -33.2 m, dt = +0.22 °C
+     * Node Coarse Tmax = 34.30 °C -> Village Tmax = 34.52 °C (vs 34.57 °C at Kudal on i=0).
+   - Pre-Monsoon (2018-04-30, in-window):
+     * Village Name: Taddewadi
+     * Village ID: ka.geojson:27275
+     * Node: (17.25°N, 75.75°E) [node_i=1, node_j=9]
+     * Fine Elev = 432.1 m, ERA5 Elev = 479.0 m, dz = -46.8 m, dt = +0.30 °C
+     * Node Coarse Tmax = 43.81 °C -> Village Tmax = 44.11 °C (vs 44.24 °C at Chinchpur on i=0).
+
+
+ITEM B51 — Sign and Denominator Conventions
+-------------------------------------------
+1. Explanation of Discrepancy:
+   - Median Offset:
+     * B27 (+2.86 m): Defined as z_ERA5 - z_SRTM (ERA5 minus SRTM).
+     * B47 (-2.85 m / -2.86 m): Defined as z_SRTM - z_ERA5 (SRTM minus ERA5).
+     * Both describe identical physics: on average across the domain, SRTM fine areal mean terrain sits 2.86 m below the coarse ERA5 surface orography.
+   - Relief Cutoff (P90):
+     * B27 (615.7 m): Evaluated over all 231 land nodes (including uninhabited mountain summits).
+     * B47 (617.3 m): Evaluated over the 210 populated nodes (containing villages).
+2. Fixed Canonical Convention for Remaining Reporting:
+   - Model Orography Offset: Formally fixed as Delta z_model = z_SRTM - z_ERA5 (SRTM minus ERA5). Domain median = -2.86 m (docs/numbers_pack.md:21).
+   - Relief Range Denominator: Formally fixed as the 210 populated nodes. Top-decile cutoff P90 = 617.3 m (docs/numbers_pack.md:20).
+
+
+ITEM B52 — On-Disk Real Path Corruption Test
+--------------------------------------------
+1. Execution on Real File Path:
+   - Script: test_b52_real_path_corruption.py
+   - Input File: outputs/village_corrections.csv (Authoritative master file on disk).
+   - Action: Backed up to outputs/village_corrections.csv.bak. Deliberately wrote row 0 dz_era5_m = 1500.0 m on disk. Ran python run_reproduction.py. Restored original from backup.
+2. Test Results:
+   - Exit Code: 1 (Non-zero exit).
+   - Fatal Message: [FATAL ASSERTION FAILURE] Inconsistency detected between fine/era5 elevations and dz_era5_m! (and if bypassed, [FATAL ASSERTION FAILURE] ASSERTION 3 FAILED: Observed max |dz_ERA5| (1500.00 m) exceeds bound (981.47 m)!).
+   - Byte-Identity Confirmation:
+     * MD5 Before: 42157952f3441d1ce6fb06910c032c6b
+     * MD5 After:  42157952f3441d1ce6fb06910c032c6b
+     * 100% BYTE-IDENTICAL CONFIRMED.
+
+
+ITEM Update 14 — Feasibility Gate Bookkeeping Update
+----------------------------------------------------
+- Added Update 14 to docs/feasibility_gate.md.
+- Retired out-of-window 2020-04-30 advisory figures (48.78% heat stress, 74.63% high ETo) in favour of in-window values (58.32%, 86.15%).
+- Retired 231-node relief cutoff (615.7 m) in favour of 210 populated-node cutoff (617.3 m).
+- Updated docs/numbers_pack.md with full in-window tables and retired figure entries.
+- Updates 1 through 13 confirmed byte-preserved.

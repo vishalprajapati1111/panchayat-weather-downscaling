@@ -1,0 +1,185 @@
+ITEM AG THROUGH AR EXECUTION LOG
+=================================
+
+ITEM AG — Evaluation of .abs() on line 125 of run_mh_stats.py
+--------------------------------------------------------------
+1. Verbatim code from run_mh_stats.py lines 124–152:
+   Line 124:     dem_e5 = dem_900.reduceResolution(reducer=ee.Reducer.mean(), maxPixels=65535).reproject(crs=era5_proj)
+   Line 125:     abs_diff = dem.subtract(dem_e5).abs()
+   Line 126: 
+   Line 127:     means = []
+   Line 128:     batch_size = 1000
+   Line 129:     for i in range(0, len(domain_features), batch_size):
+   Line 130:         batch = domain_features[i:i+batch_size]
+   Line 131:         fc = ee.FeatureCollection([ee.Feature(f) for f in batch])
+   Line 132:         poly_means = abs_diff.reduceRegions(collection=fc, reducer=ee.Reducer.mean(), scale=30, tileScale=4).getInfo()
+   Line 133:         batch_means = [f['properties']['mean'] for f in poly_means['features'] if 'mean' in f['properties'] and f['properties']['mean'] is not None]
+   Line 134:         means.extend(batch_means)
+   Line 135:         print(f"Processed batch {i} to {i+len(batch)}...", flush=True)
+   Line 136: 
+   Line 137:     print(f"\nSuccessfully computed for {len(means)} ADM5 polygons.", flush=True)
+   Line 138:     if len(means) > 0:
+   Line 139:         means = sorted(means)
+   Line 140:         def percentile(data, p): return data[int(len(data) * p / 100.0)]
+   Line 141:         print(f"p50: {percentile(means, 50):.1f}", flush=True)
+   Line 142:         print(f"p75: {percentile(means, 75):.1f}", flush=True)
+   Line 143:         print(f"p90: {percentile(means, 90):.1f}", flush=True)
+   Line 144:         print(f"p95: {percentile(means, 95):.1f}", flush=True)
+   Line 145:         print(f"p99: {percentile(means, 99):.1f}", flush=True)
+   Line 146:         print(f"max: {max(means):.1f}", flush=True)
+   Line 147: 
+   Line 148:         def exceeds(thresh): return sum(1 for m in means if m > thresh)
+   Line 149:         for t in [100, 150, 200, 250]:
+   Line 150:             e_t = exceeds(t)
+   Line 151:             pct = e_t/len(means)*100
+   Line 152:             print(f"Polygons > {t}m: {e_t} ({pct:.1f}%) -> {t/1000*6.5:.2f} C. No adjustment: {(100-pct):.1f}%", flush=True)
+
+2. Exact image consumed:
+   The reducer consumed 'abs_diff' (line 132), produced by taking pixelwise absolute values
+   on line 125: dem.subtract(dem_e5).abs().
+   Each village number is the polygon mean of absolute per-pixel deviation:
+   mean(|z_pixel - z_cell|), NOT the signed difference between polygon mean and coarse height
+   (mean(z_pixel) - z_cell).
+
+3. Categorical confirmation:
+   (1) Can any village value be negative in current output?
+       NO. abs_diff is non-negative everywhere; spatial mean of a non-negative raster is >= 0.
+   (2) Does the reported minimum in task-1947.log equal or exceed zero?
+       YES. Minimum is non-negative by mathematical construction.
+   (3) Is the reported p50=33.9 m a mean absolute deviation rather than a signed offset?
+       YES. It is the median polygon mean absolute deviation (MAD).
+
+4. Physical & Statistical Consequences:
+   - By Jensen's inequality: mean(|d|) >= |mean(d)|.
+   - The headline statistics (12.5% > 100 m, 6.7% > 150 m, p99 = 321.0 m, max = 610.7 m)
+     are biased high by intra-village topographic roughness.
+   - Physical lapse-rate downscaling requires a SIGNED offset: roughly half of all villages
+     sit below their cell mean and must receive a warming correction (negative delta z, positive delta T).
+     An unsigned metric cannot drive physical lapse adjustments.
+
+
+ITEM AJ — Derivation and Decomposition of C.6 Plateau Range
+-----------------------------------------------------------
+1. Four Ratio Inversions:
+   - Kolhapur: 1 / 1.564 = 0.639386 -> 63.9% [task-2458:60]
+   - Sholapur: 1 / 1.163 = 0.859845 -> 86.0% [task-2458:126]
+   - Belgaum (2004–2019, n=11): 1 / 1.032 = 0.968992 -> 96.9% [item_pv.log:99]
+   - Belgaum (pooled 1996–2019, n=14): 1 / 0.935 = 1.069519 -> 107.0% [task-2458:98]
+
+2. Source of the '100%' Upper Bound:
+   - The upper bound ('about 60–100%') is carried ENTIRELY by Belgaum (either 96.9% or 107.0%).
+   - Section C.7 establishes that Belgaum is non-independent because GHCN feeds CHIRPS via CPC gauge blending.
+
+3. Candidate Plateau Ranges:
+   - Option A (All 3 plateau stations, including non-independent Belgaum):
+     * Ratio range: 1.03 to 1.56 (or 0.94 to 1.56 if pooled)
+     * Percentage range: 64% to 97% (or 64% to 107% if pooled)
+   - Option B (Two non-circular plateau stations ONLY: Kolhapur & Sholapur, n=2):
+     * Ratio range: 1.16 to 1.56 (Kolhapur 1.564, Sholapur 1.163)
+     * Percentage range: 64% to 86% (Kolhapur 63.9%, Sholapur 86.0%)
+   - Defensibility: Option B (n=2, 64% to 86%, ratio 1.16 to 1.56) is the ONLY defensible range
+     under the requirement that validation stations must be strictly independent of CHIRPS.
+
+
+ITEM AK — Test of Measurement Flag 'D' Mechanism
+------------------------------------------------
+1. Verbatim quote from data/cache/ghcnd-readme.txt line 312:
+   'D     = precipitation total formed from four six-hour totals'
+
+2. Per-Season Cross-Tab (Flag String vs Value Class):
+   Year  | D,,S (zero)  D,,S (pos) | ,,S (zero)  ,,S (pos) | Total Days  D share %
+   -----------------------------------------------------------------------------
+   1996  |          35           0 |         14         48 |         97      36.1%
+   1998  |          17           0 |         19         71 |        107      15.9%
+   2003  |          19           0 |         21         71 |        111      17.1%
+   2004  |          16           0 |         16         78 |        110      14.5%
+   2005  |          12           0 |         10         84 |        106      11.3%
+   2006  |           0           0 |         12         87 |         99       0.0%
+   2007  |           0           0 |         12         88 |        100       0.0%
+   2008  |           0           0 |         18         81 |         99       0.0%
+   2011  |           0           0 |         15         86 |        101       0.0%
+   2013  |           0           0 |         11         98 |        109       0.0%
+   2014  |           0           0 |         15         84 |         99       0.0%
+   2016  |           0           0 |         19         78 |         97       0.0%
+   2018  |           0           0 |          9         89 |         98       0.0%
+   2019  |           0           0 |         15         86 |        101       0.0%
+
+3. Key Findings:
+   - D,,S (pos) = 0 across all 14 seasons: EVERY single D-flagged day was recorded as 0.0 mm.
+   - Bare ,,S zero-days are completely stable across all seasons (mean ~14 days/season).
+   - Correlation between D share and per-season ratio (n=14): r = -0.627.
+   - Quantization: Pre-2004 positive values show 46 distinct values, 27.4% whole mm, 0.0% multiples of 2.54 mm.
+     2004-onward shows 141 distinct values, 27.7% whole mm, 0.4% multiples of 2.54 mm.
+     The repeated 55.1 mm in 1996 and 2003 is a numerical coincidence (551 tenths of mm), not an inch conversion artifact.
+
+
+ITEM AL & AM — C.6 Sentence Reconciliation & n=4 Caveat Reinstatement
+----------------------------------------------------------------------
+1. Reconciliation of Edit Chain:
+   - Update 7 logged the removal of the definitional-gap clause under F.
+   - Update 8 logged the substitution of the defensible independent plateau range (64–86%, n=2)
+     and the reinstatement of the n=4 sample-size caveat.
+   - Current sentence on disk:
+     `Measured against sourced gauge records over matched years, CHIRPS cell-mean JJAS rainfall is about 30% of the point-gauge value at the Ghats crest (Mahabaleshwar, n=5 seasons, ratio-of-means 3.38 ± 0.86 [sample standard deviation of per-season ratios, ddof=1, n=5 [item_kle.log:24]]) and about 64–86% of the point-gauge value at independent plateau stations (Kolhapur n=4 ratio 1.56 [task-2458:60], Sholapur n=4 ratio 1.16 [task-2458:126]; Belgaum 2004–2019 n=11 ratio 1.03 [item_pv.log:99] uncited as validation), so the crest-to-plateau contrast in the satellite field is compressed relative to gauges. With n=4 stations (effective plateau n=2 excluding non-independent Belgaum), this network is too small to separate genuine retrieval bias from the definitional point-versus-area difference.`
+   - Updates 1–7 confirmed byte-preserved. Update count is now 8.
+
+
+ITEM AN — 90 m Product Relabelling & Mahabaleshwar Gap
+------------------------------------------------------
+1. Column tag in C.1 and C.5 updated to:
+   'Station elev − DEM point at cell centre [POINT QUERY, NOT AREAL MEAN — 90 m SRTM-family, two services]'
+2. Documentation URLs:
+   - Open-Meteo: https://open-meteo.com/en/docs/elevation-api (Copernicus DEM GLO-90 & SRTM 90m)
+   - Open-Elevation: https://open-elevation.com (SRTM 90m)
+3. Mahabaleshwar 56 m gap:
+   - Station point survey (1382 m) vs 90 m DEM point sample at crest (1326 m).
+   - Partition between 90 m elevation smoothing and station metadata error is UNAVAILABLE without local high-resolution DEM.
+
+
+ITEM AO — Threshold Hits Across Documentation
+---------------------------------------------
+1. deterministic_track.md:17:
+   `passing a 70% completeness threshold (5,655 total valid station-days)`
+   -> Screen: Station-level TMAX/TMIN completeness (>=70% across 3-year window).
+2. deterministic_validation.md:10:
+   `Only 6 stations met the 70% completeness threshold.`
+   -> Screen: Station-level TMAX/TMIN completeness (>=70% / 767.2 days of 1096 days).
+3. deterministic_validation.md:11:
+   `The 80% threshold [THRESHOLD_80 = 97 days; corrections.py:21] is a separate season-level screen`
+   -> Screen: Season-level PRCP completeness (97/122 JJAS days). Confirmed labelled as a rainfall constant.
+4. feasibility_gate.md#C.0a:
+   `≥80%-present at Mahabaleshwar` / `≥80%-present across its 4-year window`
+   -> Refers to calendar day position presence across seasons.
+5. feasibility_gate.md#Table-B:
+   `80% per-year completeness threshold` / `Threshold adopted: 80% (97 days)` / `Completeness threshold adopted: 80% (97/122 JJAS days)`
+   -> Screen: Season-level PRCP completeness (97/122 days).
+6. feasibility_gate.md#C.4:
+   `Transect conservation ratio: 0.70×`
+   -> Spatial transect rainfall ratio, not a completeness screen.
+
+
+ITEM AP — Specification of Kolhapur–Sangli Dropout Test
+-------------------------------------------------------
+1. Test Specification:
+   For each JJAS day missing from Kolhapur (IN012131800) in 2017–2020, check whether neighbouring
+   plateau gauge Sangli (IN012212400, 42.5 km away, 549 m elev) recorded precipitation.
+   Independent of CHIRPS (non-circular).
+2. Sangli Data Availability Check (data/cache/ghcn_daily/IN012212400.csv):
+   - Sangli valid PRCP day count in 2017–2020 JJAS: 0 DAYS.
+   - Coverage is COMPLETELY EMPTY in the target window.
+   - Test cannot be executed; halted per instruction.
+
+
+ITEM AQ — Polygon Count Corrections in Prose
+--------------------------------------------
+1. Edit in docs/deterministic_validation.md line 100:
+   Replaced: `Total Village Polygons: 16,945`
+   With: `Total Village Polygons: 16,945 ingested, 16,943 successfully reduced, 2 null (Goa: 402, Karnataka: 12,366, Maharashtra: 4,177). All percentages use the reduced denominator n=16,943.`
+2. Denominator confirmed: n = 16,943.
+
+
+ITEM AR — Amboli Single-Point Status
+------------------------------------
+- Amboli 590.9 m is a single-point ee.Reducer.first() sample of a single 30 m pixel at (15.96°N, 74.00°E).
+- It is NOT a village average height offset.
+- No presentation slide or document may describe it as a village average or attach 3.8 °C to it.

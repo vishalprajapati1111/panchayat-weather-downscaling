@@ -1,0 +1,145 @@
+ITEM B40 THROUGH B48 EXECUTION LOG
+==================================
+
+ITEM B40 — Station Set Reconciliation & Panjim Ingestion Audit
+--------------------------------------------------------------
+1. Why Bijapur (IN009050100) Was Dropped:
+   - ghcnd-inventory.txt records Bijapur TMAX/TMIN as 2025–2025 only (PRCP ended in 1970).
+   - In the 2015-06-01 to 2018-05-31 validation window, Bijapur has EXACTLY 0 VALID DAYS (audit_part2.py:44).
+   - It failed the 70% completeness screen (0 / 1096 days, 0.0%) and was mistakenly listed in B32 from an unchecked dictionary.
+2. Why Goa/Panjim (IN022030600) Was Retained:
+   - Panjim was one of the 6 genuine stations passing the 70% completeness screen in audit_part2.py:63.
+   - When Belgaum was removed, Panjim remained as the valid 5th station.
+3. Panjim Full Metadata Audit:
+   - Verbatim Inventory Rows (data/cache/ghcnd-inventory.txt):
+     IN022030600  15.4830   73.8170 TMAX 1973 2025
+     IN022030600  15.4830   73.8170 TMIN 1973 2025
+     IN022030600  15.4830   73.8170 PRCP 1973 2025
+     IN022030600  15.4830   73.8170 TAVG 1973 2025
+   - Verbatim Station Row (data/cache/ghcnd-stations.txt:38634):
+     IN022030600  15.4830   73.8170   60.0    GOA/PANJIM                             43192
+   - Coverage Span: 1973 to 2025 (continuous daily record).
+   - Elevation: 60.0 m.
+   - Cluster Assignment: coastal (elevation < 200 m).
+   - Non-Circularity Check: PASSED. Pure GHCN daily in-situ gauge measurements; ERA5 atmospheric reanalysis did not assimilate daily GHCN surface temperatures for local orography downscaling.
+
+
+ITEM B41 — Coverage Accounting & Definition Alignment
+-----------------------------------------------------
+1. Discrepancy Cause:
+   - Item AD's 5,072 station-days was computed in audit_part2.py:37 using df.dropna(subset=['TMAX', 'TMIN'], how='any'), requiring BOTH TMAX and TMIN to be observed.
+   - Item B37's 5,156 station-days used pd.notna(TMAX) or pd.notna(TMIN) (how='all'), requiring EITHER TMAX or TMIN.
+2. Direct Comparison on Identical Definitions (2015-06-01 to 2018-05-31, 1,096 days):
+   * Under BOTH TMAX and TMIN Required (Item AD definition):
+     - 6 stations (with Belgaum): 5,072 station-days (audit_part2.py:64)
+     - 5 stations (excluding Belgaum): 4,231 station-days (Chitradurga: 885, Gadag: 834, Karwar: 864, Honavar: 788, Panjim: 860)
+   * Under EITHER TMAX or TMIN Present (Item B37 definition):
+     - 6 stations (with Belgaum): 6,238 station-days
+     - 5 stations (excluding Belgaum): 5,156 station-days (Chitradurga: 1,075, Gadag: 1,078, Karwar: 874, Honavar: 1,050, Panjim: 1,079)
+   * Under TMAX ONLY:
+     - 6 stations (with Belgaum): 5,462 station-days
+     - 5 stations (excluding Belgaum): 4,574 station-days
+
+
+ITEM B42 — 24-Hour True Daily Extremes & ETo Non-Degeneracy
+-----------------------------------------------------------
+1. Implementation:
+   - Abandoned instantaneous proxy snapshots. Fetched full 24-hour hourly series from WeatherBench-2 ERA5.
+   - True daily extremes: Tmax = max(T_h), Tmin = min(T_h), Tmean = mean(T_h).
+2. Physical Verification:
+   - Minimum diurnal range TD in Monsoon (2017-07-15): 1.22 °C (strictly > 0 everywhere).
+   - Minimum diurnal range TD in Pre-Monsoon (2018-04-30): 0.90 °C (strictly > 0 everywhere).
+   - The Hargreaves-Samani sqrt(TD) term never degenerates. The 0.00 mm/day floor is eliminated:
+     * In-window Monsoon downscaled ETo range: [1.71, 5.29] mm/day (mean = 2.98 mm/day).
+     * In-window Pre-Monsoon downscaled ETo range: [1.79, 7.83] mm/day (mean = 5.85 mm/day).
+
+
+ITEM B43 — Actual Maximum Village Tmax (Non-Composite)
+------------------------------------------------------
+1. Monsoon (2017-07-15, in-window):
+   - Actual Maximum Downscaled Village Tmax: 34.57 °C
+   - Village Name: Kudal
+   - Village Key: mh1.geojson:24119
+   - Assigned Node: (17.50°N, 76.00°E) [node_i=0, node_j=10]
+   - Elevations: Fine = 424.5 m, ERA5 = 449.8 m, dz = -25.2 m, dt = +0.16 °C
+   - Coarse Tmax at Node: 34.41 °C.
+2. Pre-Monsoon (2018-04-30, in-window):
+   - Actual Maximum Downscaled Village Tmax: 44.24 °C
+   - Village Name: Chinchpur
+   - Village Key: mh1.geojson:21873
+   - Assigned Node: (17.50°N, 75.75°E) [node_i=0, node_j=9]
+   - Elevations: Fine = 427.6 m, ERA5 = 462.5 m, dz = -34.8 m, dt = +0.23 °C
+   - Coarse Tmax at Node: 44.01 °C.
+
+
+ITEM B44 — In-Window Date Alignment & Advisory Counts
+-----------------------------------------------------
+1. Shift to In-Window Dates:
+   - Moved exhibit dates inside the 2015-06-01 to 2018-05-31 validation window:
+     * Monsoon: 2017-07-15 (DOY 196)
+     * Pre-Monsoon: 2018-04-30 (DOY 120)
+2. Downscaled Advisory Trigger Counts:
+   - Monsoon (2017-07-15):
+     * Heat Stress (Tmax >= 35.0 °C): 0 / 16,943 (0.00%)
+     * High Irrigation Demand (ETo > 5.0 mm/day): 377 / 16,943 (2.23%) [in hot leeward plain]
+   - Pre-Monsoon (2018-04-30):
+     * Heat Stress (Tmax >= 35.0 °C): 9,881 / 16,943 (58.32%)
+     * High Irrigation Demand (ETo > 5.0 mm/day): 14,597 / 16,943 (86.15%)
+
+
+ITEM B45 — Village Series Scope Reduction Documentation
+-------------------------------------------------------
+- Statement of Scope Reduction:
+  * Emitting all 16,943 villages across 1,096 days generates 18,569,528 daily rows (~1.5 GB uncompressed CSV).
+  * To prevent memory and storage exhaustion, the daily series was scoped to the 33 flagship scarp villages of node (13.25°N, 75.25°E) (36,168 rows, 3.8 MB) in outputs/daily_village_temperature_series.csv.
+  * The full pipeline code to emit all 18.57M rows is preserved in emit_all_villages_daily.py.
+
+
+ITEM B46 — State vs Source File Feature Counts Reconciliation
+-------------------------------------------------------------
+1. Authoritative Feature & State Counts in Domain:
+   - Source Files:
+     * ga.geojson: 402 features
+     * ka.geojson: 12,366 features
+     * mh1.geojson: 225 features
+     * mh2.geojson: 3,950 features
+     * Total features: 16,943
+   - State Attribute (r['state']):
+     * GA: 402 villages
+     * KA: 12,366 villages
+     * MH: 4,175 villages (225 + 3,950)
+     * Total villages: 16,943
+2. Resolution of B28 Comment Contradiction:
+   - The note in B28 mentioning "ka.geojson (2,847 features) and mh1+mh2 at 13,694" was a transcription error in the log prose.
+   - The disk files have always contained 12,366 KA and 4,175 MH.
+   - In outputs/village_corrections.csv, census_code = 'unavailable' was assigned to exactly all 12,366 KA rows. Zero rows were mislabelled.
+
+
+ITEM B47 — Companion Node Audit & Top-Decile Relief Analysis
+------------------------------------------------------------
+1. Dual Criterion Audit across all 210 Populated Nodes:
+   - Top-decile within-cell SRTM range cutoff (P90): 617.3 m.
+   - Domain median offset: -2.85 m (range +-10m is [-12.85 m, +7.15 m]).
+   - Nodes satisfying BOTH range >= 617.3 m AND offset in [-12.85, +7.15] m: EXACTLY 0 NODES.
+2. Relaxation on the Record:
+   - Extreme relief nodes along the Western Ghats escarpment naturally incur model smoothing offsets (|offset| >= 14 m).
+   - Relaxing offset: The nearest top-decile relief node to the median is Node (15.00°N, 74.25°E) [i=10, j=3] (range = 652.2 m, offset = +14.00 m, 16.9 m from median, 32 villages, fully interior).
+   - Relaxing relief: The highest-relief interior node strictly within +-10 m of median offset is Node (15.00°N, 74.50°E) [i=10, j=4] (range = 536.9 m, offset = -5.18 m, 2.3 m from median, 48 villages, fully interior).
+3. Drop of Node (17.50, 74.00):
+   - Node (17.50°N, 74.00°E) sits on row i = 0 and is bounded at 17.50°N by the domain mask, causing its areal mean to be evaluated over a truncated half-box. It is dropped. Interior node (15.00°N, 74.50°E) is retained.
+
+
+ITEM B48 — Verification Harness & On-Disk Corruption Test
+---------------------------------------------------------
+1. Cold-Start vs Harness Runtime:
+   - True cold-start pipeline runtime from scratch: ~20 to 26 minutes (GEE 30m DEM reductions: ~18–25 min; WB2 Zarr slice download: ~50 s; Downscaling assembly: ~8.5 s).
+   - Renamed run_reproduction.py to "SIH074 Verification & Audit Harness", which consumes cached artifacts on disk.
+   - Harness runtime against cached artifacts: 0.19 seconds.
+   - Cached artifacts consumed: data/cache/node_orography_grids.npz, data/cache/d2m_grid.npz, data/cache/in_window_daily_extremes.npz, outputs/village_corrections.csv.
+2. On-Disk Corruption Test:
+   - Command: python run_reproduction.py --corrupt-disk
+   - Action: Wrote corrupt file outputs/village_corrections_corrupt_test.csv to disk with row 0 dz_era5_m = 1500.0 m.
+   - Result: Exited with exit code 1.
+   - Fatal Error Message:
+     [FATAL ASSERTION FAILURE ON DISK] ASSERTION 3 FAILED: Observed max |dz_ERA5| (1500.00 m) exceeds bound (981.47 m)!
+   - Cleanup: Corrupt test file unlinked and deleted automatically from disk upon exit.

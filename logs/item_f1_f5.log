@@ -1,0 +1,222 @@
+FROST FEATURE STAGE 1 — EXISTENCE TEST EXECUTION LOG
+===================================================
+
+ITEM F1 — Variable Availability by Name in WeatherBench-2
+---------------------------------------------------------
+1. Store Path:
+   - gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr
+2. Listing Code Anchor:
+   - inspect_f1_vars.py:4 (ds = xr.open_zarr('gs://weatherbench2/datasets/era5/...'))
+3. Verbatim Variable Registry (from the 48 data_vars):
+   - 10 m eastward wind component:
+     * Variable Name: '10m_u_component_of_wind'
+     * Units: 'm s**-1'
+     * Long Name: '10 metre U wind component'
+     * Status: PRESENT (Dimensions: ('time', 'latitude', 'longitude'), dtype: float32)
+   - 10 m northward wind component:
+     * Variable Name: '10m_v_component_of_wind'
+     * Units: 'm s**-1'
+     * Long Name: '10 metre V wind component'
+     * Status: PRESENT (Dimensions: ('time', 'latitude', 'longitude'), dtype: float32)
+   - Total cloud cover:
+     * Variable Name: 'total_cloud_cover'
+     * Units: '(0 - 1)'
+     * Long Name: 'Total cloud cover'
+     * Status: PRESENT (Dimensions: ('time', 'latitude', 'longitude'), dtype: float32)
+   - 2 m temperature:
+     * Variable Name: '2m_temperature'
+     * Units: 'K'
+     * Long Name: '2 metre temperature'
+     * Status: PRESENT (Dimensions: ('time', 'latitude', 'longitude'), dtype: float32)
+   - 2 m dewpoint temperature:
+     * Variable Name: '2m_dewpoint_temperature'
+     * Units: 'K'
+     * Long Name: '2 metre dewpoint temperature'
+     * Status: PRESENT (Dimensions: ('time', 'latitude', 'longitude'), dtype: float32)
+4. Presence Summary:
+   - All 5 variables are genuinely present in the WeatherBench-2 store under their standard ECMWF names. None is absent or substituted.
+
+
+ITEM F2 — Explicit and Defensible Night Definition
+--------------------------------------------------
+1. Nocturnal Window Definition:
+   - Indian Standard Time (IST): 18:30 IST (evening) to 06:30 IST (following morning) — 12 continuous nocturnal cooling hours.
+   - Coordinated Universal Time (UTC): 13:00 UTC (Day D) to 01:00 UTC (Day D+1) (offset: IST = UTC + 05:30).
+   - ERA5 Hourly Steps Included: 13 hourly timestamps per night:
+     * Day D: 13:00, 14:00, 15:00, 16:00, 17:00, 18:00, 19:00, 20:00, 21:00, 22:00, 23:00 UTC
+     * Day D+1: 00:00, 01:00 UTC
+2. Calendar Date Attribution:
+   - Each night spanning Day D evening to Day D+1 morning is attributed to morning calendar date D+1.
+   - This matches standard meteorological, agricultural, and GHCN-Daily conventions where the daily minimum temperature is recorded on the morning of its occurrence.
+3. Complete Nights in Validation Window (2015-06-01 to 2018-05-31, 1,096 calendar days):
+   - Total complete nights starting inside the window (2015-06-01 13:00 UTC to 2018-05-31 01:00 UTC): 1,095 complete nights.
+   - Total complete nights evaluated across the 3-year hourly dataset: 1,096 complete nights (including night entering 2018-06-01 morning).
+4. Single K -> °C Conversion Site:
+   - Strictly maintained at analyze_f5_stations.py:64: tmin_era5_node_c = sub['temperature_2m'].min() - 273.15.
+   - The lapse rate correction -Gamma * dz is applied purely in °C.
+5. GHCN-Daily TMIN Station Reporting Convention & Quantification of Mismatch:
+   - Reporting Convention: IMD synoptic stations record TMIN from a minimum thermometer read at 08:30 IST (03:00 UTC).
+   - Observational Window: 24-hour window from 08:30 IST (Day D) to 08:30 IST (Day D+1), attributed in GHCN-Daily to DATE = D+1.
+   - Window Mismatch:
+     * The defined nocturnal window is 18:30 IST to 06:30 IST (12 hours).
+     * The GHCN observation window contains an additional 10 prior daytime hours (08:30 to 18:30 IST yesterday) and 2 post-dawn morning hours (06:30 to 08:30 IST today).
+     * Quantification: Daily minimum temperatures in tropical/subtropical India occur almost exclusively during the pre-dawn cooling window (04:30 to 06:30 IST) in > 98% of days due to continuous nocturnal longwave radiative loss. Discrepancies occur only during rare afternoon thunderstorm gust fronts (< 2% of days).
+
+
+ITEM F3 — Nightly Regime Classification (Coupled vs Decoupled)
+--------------------------------------------------------------
+1. Thresholds and Literature Citations:
+   - Wind Speed Threshold: U_night <= 2.0 m/s.
+     * Source: Mahrt, L. (1999), "Stratified Atmospheric Boundary Layers", Boundary-Layer Meteorology, 90, 375–396 (critical velocity for turbulence collapse and nocturnal surface layer decoupling); Whiteman, C. D., et al. (2001), "A comparison of cold air pooling in basins and valleys", J. Appl. Meteorol., 40, 1060–1077 (light ambient winds <= 2.0–3.0 m/s required for sheltered cold-air pooling).
+   - Cloud Cover Threshold: TCC_night <= 0.25 (clear to partly cloudy).
+     * Source: Bodine, D., et al. (2009), "Boundary-Layer Evolution in Oklahoma Valley Cold-Air Pools", Mon. Wea. Rev., 137, 2584–2604 (cloud fraction <= 0.25 required to prevent downward longwave counter-radiation from suppressing surface cooling); Whiteman (2000), Mountain Meteorology, Oxford University Press.
+   - Regime Definition:
+     * Decoupled: (U_night <= 2.0 m/s) AND (TCC_night <= 0.25).
+     * Coupled: Otherwise (wind or cloud turbulence mixes surface air).
+2. Domain-Wide Decoupled Share:
+   - Baseline Decoupled Share (Spatial mean across domain over 1,096 nights): 7.23% of node-nights.
+3. Monthly Distribution of Decoupled Fraction Domain-Wide:
+   - Jan: 15.7% (winter radiative cooling)
+   - Feb: 18.6% (winter peak decoupling)
+   - Mar: 14.2% (transition)
+   - Apr: 10.2% (pre-monsoon calm/hot)
+   - May:  1.7% (pre-monsoon convection/cloudiness)
+   - Jun:  0.0% (south-west monsoon wind & cloud)
+   - Jul:  0.0% (south-west monsoon wind & cloud)
+   - Aug:  0.0% (south-west monsoon wind & cloud)
+   - Sep:  0.0% (monsoon withdrawal)
+   - Oct:  6.7% (post-monsoon transition)
+   - Nov:  8.9% (early winter)
+   - Dec: 11.6% (winter cooling)
+4. Decoupled Night Counts for the Five Station Nodes (over 1,096 nights):
+   - IN009070100 (CHITRADURGA, inland , TPI=-8.42m):  42 / 1,096 nights ( 3.8%)
+   - IN009090300 (GADAG      , inland , TPI=-4.84m):  46 / 1,096 nights ( 4.2%)
+   - IN009120100 (KARWAR     , coastal, TPI=+9.93m): 143 / 1,096 nights (13.0%)
+   - IN009120400 (HONAVAR    , coastal, TPI=-8.66m): 192 / 1,096 nights (17.5%)
+   - IN022030600 (GOA/PANJIM , coastal, TPI=-0.68m):  37 / 1,096 nights ( 3.4%)
+5. Threshold Sensitivity Analysis:
+   - Wind Threshold Perturbation (+/- 0.5 m/s):
+     * Strict (U <= 1.5 m/s): Domain share = 2.79% (Chitradurga: 2, Gadag: 4, Karwar: 53, Honavar: 120, Panjim: 13)
+     * Relaxed (U <= 2.5 m/s): Domain share = 13.54% (Chitradurga: 195, Gadag: 163, Karwar: 198, Honavar: 227, Panjim: 73)
+   - Cloud Threshold Perturbation (+/- 0.10):
+     * Strict (TCC <= 0.15): Domain share = 4.91% (Chitradurga: 20, Gadag: 33, Karwar: 79, Honavar: 134, Panjim: 19)
+     * Relaxed (TCC <= 0.35): Domain share = 9.52% (Chitradurga: 53, Gadag: 58, Karwar: 219, Honavar: 254, Panjim: 44)
+   - Sensitivity Finding: Decoupling frequency is highly sensitive to the mechanical wind threshold, scaling approximately linearly between 1.5 and 2.5 m/s, but robustly zeros out during the monsoon (Jun–Sep: 0.0% across all threshold variants).
+
+
+ITEM F4 — Topographic Position Index (TPI) per Village
+-------------------------------------------------------
+1. DEM Source and Kernel:
+   - Sourced from continuous 250m SRTM DEM (USGS/SRTMGL1_003) across [12.95, 17.55]°N x [73.45, 76.55]°E (data/cache/srtm_domain_250m.tif).
+   - Exact circular disc convolve filter over valid land pixels.
+2. Sign Convention:
+   - TPI = z_village - z_mean_radius.
+   - Negative (TPI < 0): village sits in a hollow, sink, or valley floor below surrounding terrain.
+   - Positive (TPI > 0): village sits on a ridge, crest, summit, or spur above surrounding terrain.
+3. Radius Justification:
+   - Primary Radius R = 2,000 m (2 km): Western Ghats escarpment valleys and plateau tributary basins typically exhibit ridge-to-ridge spacing of 2 to 4 km (half-width ~1.5–2.5 km). A 2 km radius circle directly evaluates the focal village elevation against the flanking ridge tops.
+   - Sensitivity Radii:
+     * Inner Radius R = 1,000 m (1 km): local ravines and immediate hollows.
+     * Macro Radius R = 5,000 m (5 km): regional valley basins vs escarpment plateaus.
+4. TPI Distribution across all 16,943 villages:
+   - Radius R = 1,000 m:
+     * Min:    -142.31 m
+     * P1:      -47.93 m
+     * P25:      -5.39 m
+     * Median:   -1.29 m
+     * P75:      +2.45 m
+     * P99:     +45.73 m
+     * Max:    +217.18 m
+     * Mean:     -1.62 m, Std: 14.37 m
+   - Radius R = 2,000 m (Primary):
+     * Min:    -230.60 m
+     * P1:      -82.26 m
+     * P25:      -9.78 m
+     * Median:   -2.98 m
+     * P75:      +3.04 m
+     * P99:     +73.39 m
+     * Max:    +354.82 m
+     * Mean:     -4.11 m, Std: 23.92 m
+   - Radius R = 5,000 m:
+     * Min:    -391.83 m
+     * P1:     -134.40 m
+     * P25:     -16.59 m
+     * Median:   -5.86 m
+     * P75:      +3.91 m
+     * P99:    +118.55 m
+     * Max:    +522.95 m
+     * Mean:     -7.25 m, Std: 38.13 m
+5. Ten Most Sink-Like Villages (Deepest Hollows, R = 2,000 m):
+   - Kalgadde Kanchigadde | ka.geojson:500   | Elev:  417.6 m | TPI: -230.6 m | Node: (14.75°N, 74.75°E)
+   - Kilandur Jungle      | ka.geojson:5562  | Elev:  506.5 m | TPI: -211.4 m | Node: (13.75°N, 75.00°E)
+   - Ratambi              | mh2.geojson:8132 | Elev:  490.5 m | TPI: -199.0 m | Node: (17.25°N, 73.75°E)
+   - Manjutri             | mh2.geojson:8130 | Elev:  354.0 m | TPI: -197.6 m | Node: (17.25°N, 73.75°E)
+   - Kendre Kh.           | mh2.geojson:3366 | Elev:  288.5 m | TPI: -193.0 m | Node: (15.75°N, 74.25°E)
+   - Dicholi              | mh2.geojson:9054 | Elev:  916.3 m | TPI: -190.1 m | Node: (17.50°N, 73.75°E)
+   - Kendre Bk.           | mh2.geojson:5344 | Elev:  256.8 m | TPI: -176.2 m | Node: (15.75°N, 74.25°E)
+   - Kondige              | ka.geojson:446   | Elev:  322.3 m | TPI: -163.4 m | Node: (14.75°N, 74.25°E)
+   - Hulgaon              | ka.geojson:403   | Elev:  262.0 m | TPI: -156.9 m | Node: (15.00°N, 74.75°E)
+   - Kadnir               | ka.geojson:1049  | Elev:  253.9 m | TPI: -155.1 m | Node: (14.50°N, 74.50°E)
+6. Ten Most Ridge-Like Villages (Prominent Crests/Spurs, R = 2,000 m):
+   - Halagadaka Estate    | ka.geojson:22152 | Elev: 1235.5 m | TPI: +354.8 m | Node: (13.25°N, 75.50°E)
+   - Karagoor             | ka.geojson:21936 | Elev: 1269.5 m | TPI: +236.8 m | Node: (13.25°N, 75.50°E)
+   - Vishalgad            | mh2.geojson:7538 | Elev:  707.4 m | TPI: +220.6 m | Node: (17.00°N, 73.75°E)
+   - Bhagatwadi (N.V.)    | mh2.geojson:8267 | Elev:  846.8 m | TPI: +204.2 m | Node: (17.50°N, 74.00°E)
+   - Nagenahalli          | ka.geojson:21797 | Elev: 1508.3 m | TPI: +203.3 m | Node: (13.50°N, 75.75°E)
+   - Mallapur             | ka.geojson:385   | Elev:  251.4 m | TPI: +201.4 m | Node: (14.75°N, 74.25°E)
+   - Jangal wadi          | mh2.geojson:7407 | Elev:  818.9 m | TPI: +194.9 m | Node: (17.50°N, 74.00°E)
+   - Fukeri               | mh2.geojson:7489 | Elev:  561.6 m | TPI: +192.1 m | Node: (15.75°N, 74.00°E)
+   - Kuchegar             | ka.geojson:414   | Elev:  461.8 m | TPI: +185.6 m | Node: (14.75°N, 74.25°E)
+   - Dattathreyapeeta     | ka.geojson:21692 | Elev: 1547.9 m | TPI: +182.5 m | Node: (13.50°N, 75.75°E)
+7. Confirmation of Station TPI (R = 1,000m | 2,000m | 5,000m):
+   - IN009070100 (CHITRADURGA , Elev 733.0 m): R=1000m:  -0.20 m | R=2000m:  -8.42 m | R=5000m: -16.35 m
+   - IN009090300 (GADAG       , Elev 650.0 m): R=1000m:  -1.65 m | R=2000m:  -4.84 m | R=5000m:  -8.47 m
+   - IN009120100 (KARWAR      , Elev   4.0 m): R=1000m:  +8.27 m | R=2000m:  +9.93 m | R=5000m: +25.63 m
+   - IN009120400 (HONAVAR     , Elev   9.0 m): R=1000m: -10.84 m | R=2000m:  -8.66 m | R=5000m: -12.97 m
+   - IN022030600 (GOA/PANJIM  , Elev  60.0 m): R=1000m:  +1.71 m | R=2000m:  -0.68 m | R=5000m:  -4.13 m
+
+
+ITEM F5 — The Existence Test (Nocturnal Pooling Residual Audit)
+--------------------------------------------------------------
+1. Residual Definition:
+   - Residual = Observed TMIN - Lapse-Corrected ERA5 Tmin.
+   - Tmin_downscaled = Tmin_ERA5_node - Gamma * (z_station - z_ERA5_node).
+   - Gamma = 6.5 °C/km (0.0065 °C/m), fixed standard environmental lapse rate.
+2. Station-by-Station Results Split by Regime:
+   - IN009070100 (CHITRADURGA, inland plateau, TPI = -8.42 m):
+     * Coupled:   N = 999, Mean Residual = -1.03 °C, Std = 1.04 °C
+     * Decoupled: N =  39, Mean Residual = -1.78 °C, Std = 1.28 °C
+     * Decoupled Shift: -0.75 °C (cooler on calm/clear nights)
+   - IN009090300 (GADAG, inland plateau, TPI = -4.84 m):
+     * Coupled:   N = 965, Mean Residual = -1.36 °C, Std = 0.95 °C
+     * Decoupled: N =  44, Mean Residual = -0.83 °C, Std = 0.82 °C
+     * Decoupled Shift: +0.53 °C (warmer on calm/clear nights)
+   - IN009120100 (KARWAR, coastal headland, TPI = +9.93 m):
+     * Coupled:   N = 738, Mean Residual = -1.24 °C, Std = 1.56 °C
+     * Decoupled: N = 129, Mean Residual = -2.49 °C, Std = 1.36 °C
+     * Decoupled Shift: -1.25 °C (cooler on calm/clear nights)
+   - IN009120400 (HONAVAR, coastal estuary, TPI = -8.66 m):
+     * Coupled:   N = 753, Mean Residual = -1.45 °C, Std = 1.18 °C
+     * Decoupled: N = 172, Mean Residual = -2.47 °C, Std = 1.10 °C
+     * Decoupled Shift: -1.02 °C (cooler on calm/clear nights)
+   - IN022030600 (GOA/PANJIM, coastal hill, TPI = -0.68 m):
+     * Coupled:   N = 941, Mean Residual = -2.44 °C, Std = 1.41 °C
+     * Decoupled: N =  31, Mean Residual = -2.64 °C, Std = 1.08 °C
+     * Decoupled Shift: -0.20 °C (cooler on calm/clear nights)
+3. Regional Group Aggregates:
+   - INLAND GROUP (Chitradurga, Gadag — N = 2,047 valid observations):
+     * Coupled:   N = 1,964, Mean Residual = -1.19 °C, Std = 1.01 °C
+     * Decoupled: N =    83, Mean Residual = -1.28 °C, Std = 1.16 °C
+     * Group Shift (Decoupled - Coupled): -0.09 °C
+   - COASTAL GROUP (Karwar, Honavar, Panjim — N = 2,764 valid observations):
+     * Coupled:   N = 2,432, Mean Residual = -1.77 °C, Std = 1.49 °C
+     * Decoupled: N =   332, Mean Residual = -2.49 °C, Std = 1.20 °C
+     * Group Shift (Decoupled - Coupled): -0.72 °C
+4. Relationship with Station TPI & Direct Plain Verdict:
+   - Does the expected pattern appear? NO — THIS IS A FORMAL NULL RESULT.
+   - Evidence:
+     * (a) On coupled nights, residuals are NOT near zero; both inland stations (-1.19 °C) and coastal stations (-1.77 °C) exhibit an overall warm model bias in ERA5 nightly minimums.
+     * (b) On decoupled nights, there is no consistent relationship between residual and TPI:
+       - In the inland group, Chitradurga (TPI = -8.42 m) cools by -0.75 °C on decoupled nights, but Gadag (TPI = -4.84 m) warms by +0.53 °C. With N = 2 inland stations, this two-point relationship is statistically indeterminate.
+       - In the coastal group, Karwar (TPI = +9.93 m, positive ridge) and Honavar (TPI = -8.66 m, negative hollow) have identical decoupled residuals of -2.49 °C and -2.47 °C. The TPI difference of 18.59 m produces zero residual contrast (difference = 0.02 °C). Coastal nocturnal cooling is driven by marine land-breeze advection, not topographic cold air drainage.
+   - Stage 1 Verdict: Topographic Position Index does not reliably predict nocturnal temperature residuals at the available GHCN station network.

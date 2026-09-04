@@ -1,0 +1,81 @@
+ITEM AG AND AJ EXECUTION LOG
+=============================
+
+ITEM AG — Evaluation of .abs() on line 125 of run_mh_stats.py
+--------------------------------------------------------------
+1. Verbatim code from run_mh_stats.py lines 124–152:
+   Line 124:     dem_e5 = dem_900.reduceResolution(reducer=ee.Reducer.mean(), maxPixels=65535).reproject(crs=era5_proj)
+   Line 125:     abs_diff = dem.subtract(dem_e5).abs()
+   Line 126: 
+   Line 127:     means = []
+   Line 128:     batch_size = 1000
+   Line 129:     for i in range(0, len(domain_features), batch_size):
+   Line 130:         batch = domain_features[i:i+batch_size]
+   Line 131:         fc = ee.FeatureCollection([ee.Feature(f) for f in batch])
+   Line 132:         poly_means = abs_diff.reduceRegions(collection=fc, reducer=ee.Reducer.mean(), scale=30, tileScale=4).getInfo()
+   Line 133:         batch_means = [f['properties']['mean'] for f in poly_means['features'] if 'mean' in f['properties'] and f['properties']['mean'] is not None]
+   Line 134:         means.extend(batch_means)
+   Line 135:         print(f"Processed batch {i} to {i+len(batch)}...", flush=True)
+   Line 136: 
+   Line 137:     print(f"\nSuccessfully computed for {len(means)} ADM5 polygons.", flush=True)
+   Line 138:     if len(means) > 0:
+   Line 139:         means = sorted(means)
+   Line 140:         def percentile(data, p): return data[int(len(data) * p / 100.0)]
+   Line 141:         print(f"p50: {percentile(means, 50):.1f}", flush=True)
+   Line 142:         print(f"p75: {percentile(means, 75):.1f}", flush=True)
+   Line 143:         print(f"p90: {percentile(means, 90):.1f}", flush=True)
+   Line 144:         print(f"p95: {percentile(means, 95):.1f}", flush=True)
+   Line 145:         print(f"p99: {percentile(means, 99):.1f}", flush=True)
+   Line 146:         print(f"max: {max(means):.1f}", flush=True)
+   Line 147: 
+   Line 148:         def exceeds(thresh): return sum(1 for m in means if m > thresh)
+   Line 149:         for t in [100, 150, 200, 250]:
+   Line 150:             e_t = exceeds(t)
+   Line 151:             pct = e_t/len(means)*100
+   Line 152:             print(f"Polygons > {t}m: {e_t} ({pct:.1f}%) -> {t/1000*6.5:.2f} C. No adjustment: {(100-pct):.1f}%", flush=True)
+
+2. Exact image consumed:
+   The reducer consumed 'abs_diff' (line 132), which was produced by taking the absolute value
+   of pixelwise differences on line 125: dem.subtract(dem_e5).abs().
+   Therefore, each village value is the polygon mean of the absolute per-pixel deviation:
+   mean(|z_pixel - z_cell|), NOT the signed difference between the polygon mean elevation
+   and the coarse cell elevation (mean(z_pixel) - z_cell).
+
+3. Categorical confirmation:
+   (1) Can any village value be negative in current output?
+       NO. abs_diff is non-negative everywhere; any spatial mean of a non-negative raster is >= 0.
+   (2) Does the reported minimum in task-1947.log equal or exceed zero?
+       YES. Minimum is non-negative by mathematical construction.
+   (3) Is the reported p50=33.9 m a mean absolute deviation rather than a signed offset?
+       YES. It is the median polygon mean absolute deviation (MAD).
+
+4. Physical & Statistical Consequences:
+   - By Jensen's inequality / triangle inequality: mean(|d|) >= |mean(d)|.
+   - The headline statistics (12.5% > 100 m, 6.7% > 150 m, p99 = 321.0 m, max = 610.7 m)
+     are biased high by intra-village topographic roughness.
+   - Physical lapse-rate downscaling requires a SIGNED offset: villages lower than the coarse grid
+     must receive a warming correction (negative delta z, positive delta T), while villages higher
+     receive a cooling correction. An unsigned metric cannot drive physical temperature adjustments.
+
+
+ITEM AJ — Derivation and Decomposition of C.6 Plateau Range
+-----------------------------------------------------------
+1. Four Ratio Inversions:
+   - Kolhapur: 1 / 1.564 = 0.639386 -> 63.9% [task-2458:60]
+   - Sholapur: 1 / 1.163 = 0.859845 -> 86.0% [task-2458:126]
+   - Belgaum (2004–2019, n=11): 1 / 1.032 = 0.968992 -> 96.9% [item_pv.log:99]
+   - Belgaum (pooled 1996–2019, n=14): 1 / 0.935 = 1.069519 -> 107.0% [task-2458:98]
+
+2. Source of the '100%' Upper Bound:
+   - The upper bound ('about 60–100%') is carried ENTIRELY by Belgaum (either 96.9% or 107.0%).
+   - Section C.7 establishes that Belgaum is non-independent because GHCN feeds CHIRPS via CPC gauge blending.
+
+3. Candidate Plateau Ranges:
+   - Option A (All 3 plateau stations, including non-independent Belgaum):
+     * Ratio range: 1.03 to 1.56 (or 0.94 to 1.56 if pooled)
+     * Percentage range: 64% to 97% (or 64% to 107% if pooled)
+   - Option B (Two non-circular plateau stations ONLY: Kolhapur & Sholapur, n=2):
+     * Ratio range: 1.16 to 1.56 (Kolhapur 1.564, Sholapur 1.163)
+     * Percentage range: 64% to 86% (Kolhapur 63.9%, Sholapur 86.0%)
+   - Defensibility: Option B (n=2, 64% to 86%, ratio 1.16 to 1.56) is the ONLY defensible range
+     under the requirement that validation stations must be strictly independent of CHIRPS.

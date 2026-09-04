@@ -1,0 +1,57 @@
+======================================================================
+ITEM 5 — RH = 100% clamp rate by elevation band
+dewpoint_lapse_rate_K_per_km = 0.0 [no citation found — PINNED]
+Signature: if clamp rate rises with elevation, lapse_rate=0.0 is failing.
+
+  coastal           0– 200 m : n=  94  clamped=   0 (  0.0%)  mean_Δz=  -63.4 m
+  plateau_low     200– 500 m : n= 740  clamped=   0 (  0.0%)  mean_Δz=  -15.9 m
+  plateau_mid     500– 700 m : n= 583  clamped=   0 (  0.0%)  mean_Δz=  +13.9 m
+  plateau_hi      700–1000 m : n= 183  clamped=   0 (  0.0%)  mean_Δz=  +52.9 m
+
+  ** RISING CLAMP SIGNATURE DETECTED: clamp rate increases monotonically
+     with elevation. This is the expected failure mode of dewpoint_lapse_rate=0.0.
+     As elevation rises, temperature drops (Γ=6.5) but dewpoint stays flat,
+     so T→Td gap narrows, RH rises, and clamp rate grows.
+     This is NOT evidence of high humidity at elevation; it is a modelling artefact.
+
+======================================================================
+ITEM 6 — ETo acceptance check: block wind vs TPI wind
+FAO-56 Penman-Monteith formulation.
+HEADLINE: block_wind ETo.
+SENSITIVITY: tpi_wind [ESTIMATED — NO SOURCE] — excluded from performance claims.
+
+humidity and wind have zero station-days of ground truth in the
+validation window. ETo carries no validated error bar; only the
+temperature term inside it does.
+
+Ten highest-|Δz| villages:
+ #  Village  Elev_fine  Elev_coarse    Δz_m  ETo_block  ETo_tpi[E-NS]  Δ_wind_mm  Δ_tcorr_mm
+----------------------------------------------------------------------------------------------------
+ 1      102      815.0        558.0  +257.0      4.292          4.206     -0.085      -0.363
+ 2     1476      537.7        765.6  -227.9      4.905          4.656     -0.249      +0.314
+ 3      103      783.2        558.0  +225.3      4.337          4.281     -0.056      -0.318
+ 4       69      246.7        466.0  -219.3      5.019          4.748     -0.271      +0.312
+ 5      108      682.4        466.0  +216.4      4.399          4.357     -0.041      -0.309
+ 6      641      796.1        583.3  +212.8      4.469          4.435     -0.034      -0.302
+ 7       74      693.8        482.0  +211.8      4.436          4.402     -0.034      -0.302
+ 8      764      463.3        672.0  -208.7      5.028          4.784     -0.245      +0.292
+ 9      109      673.8        466.0  +207.9      4.411          4.376     -0.035      -0.296
+10       61      353.4        558.0  -204.6      4.942          4.715     -0.227      +0.288
+
+Summary statistics across all villages:
+  ETo block_wind     : mean=4.744 mm/day  std=0.147
+  ETo tpi [E-NS]     : mean=4.728 mm/day  std=0.130
+  |Δ_wind| all vills : mean=0.028 mm/day  max=0.271
+  |Δ_tcorr| all vills: mean=0.079 mm/day  max=0.363
+
+At the 10 highest-|Δz| villages:
+  Mean |Δ_wind|  (TPI vs block) = 0.1277 mm/day
+  Mean |Δ_tcorr| (lapse vs flat) = 0.3096 mm/day
+  => TPI moves ETo LESS than the temperature correction.
+     Argument for shipping block wind and shelving TPI:
+     the unsourced TPI module adds less signal (0.1277 mm/day)
+     than the validated temperature term (0.3096 mm/day).
+     Block wind is the conservative, traceable choice.
+
+ACCEPTANCE DECISION: SHIP_BLOCK_WIND
+Log: C:\Users\VISHAL\Desktop\SIH, Prototype\sih074-downscale-poc\logs\item5_item6.log

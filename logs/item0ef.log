@@ -1,0 +1,39 @@
+A — Retract 'structural.'
+Mahabaleshwar (5 seasons): [103, 109, 107, 108, 108]
+Belgaum (14 seasons): [97, 107, 111, 110, 106, 99, 100, 99, 101, 109, 99, 97, 98, 101]
+Mahabaleshwar: min 103, max 109.
+Belgaum: min 97, max 111.
+The 111 days is simply Belgaum's best observed season, not a recording-protocol ceiling.
+First published: docs/feasibility_gate.md, line 356.
+Retraction sentence: We retract the claim that 111/122 is a structural maximum; it is merely an empirical sample maximum for Belgaum.
+
+B — Monthly missing-day counts.
+From task-2458.log:
+Kolhapur:
+15:   Jun: 98/120 days present (82%) across 4 valid seasons
+16:   Jul: 110/124 days present (89%) across 4 valid seasons
+17:   Aug: 110/124 days present (89%) across 4 valid seasons
+18:   Sep: 89/120 days present (74%) across 4 valid seasons
+Belgaum:
+72:   Jun: 317/420 days present (75%) across 14 valid seasons
+73:   Jul: 400/434 days present (92%) across 14 valid seasons
+74:   Aug: 397/434 days present (91%) across 14 valid seasons
+75:   Sep: 320/420 days present (76%) across 14 valid seasons
+
+Interpretation:
+Kolhapur missing counts per month:
+- Jun: 98 present, 22 missing (18% missing)
+- Jul: 110 present, 14 missing (11% missing)
+- Aug: 110 present, 14 missing (11% missing)
+- Sep: 89 present, 31 missing (26% missing)
+
+Belgaum missing counts per month:
+- Jun: 317 present, 103 missing (25% missing)
+- Jul: 400 present, 34 missing (8% missing)
+- Aug: 397 present, 37 missing (9% missing)
+- Sep: 320 present, 100 missing (24% missing)
+
+Missing days visibly skew toward June and September; they are not spread evenly.
+Since they are not spread evenly, no retraction of the 'cluster' sentence is required, and the 'upper estimate' qualifier holds.
+Reconciliation with 0a's random verdict: While missing days are random in terms of exactly which specific calendar dates drop out each year (no date is structurally always missing), the probability of random dropout is seasonally distributed, skewing higher at the season edges.
+Note: 0a's under-20%-of-years threshold was too lax to detect a 25%-vs-8% monthly dropout difference, so 0a must not be cited as evidence of even distribution.

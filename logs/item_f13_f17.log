@@ -1,0 +1,205 @@
+ITEM F13: RECONCILE THE REGIME CLASSIFICATION
+================================================================================
+1. The Three Decoupled-Night Counts Explained:
+   Three different sets of decoupled-night counts were reported for the five synoptic stations:
+
+   - Set 1 (F3): 42 / 46 / 143 / 192 / 37 (Total = 460 / 5,480 station-nights = 8.39%)
+     * What it counts: All 1,096 complete calendar nights in the 3-year validation window (2015-06-01 to 2018-05-31) across the 5 stations meeting the meteorological decoupling criteria: nocturnal mean wind speed U <= 2.0 m/s AND nocturnal mean cloud cover TCC <= 0.25, evaluated over the 13-h nocturnal window (18:30 IST to 06:30 IST).
+     * Code path: sih074-downscale-poc/analyze_f5_stations.py:75 (evaluated against data/cache/station_hourly_era5.csv and saved to data/cache/station_nightly_residuals.csv; reported in logs/item_f1_f5.log:91-96).
+     * Breakdown: Chitradurga: 42 (3.83%), Gadag: 46 (4.20%), Karwar: 143 (13.05%), Honavar: 192 (17.52%), Goa/Panjim: 37 (3.38%).
+
+   - Set 2 (F5 Regime Split): 39 / 44 / 129 / 172 / 31 (Total = 415 decoupled, 4,396 coupled, 4,811 valid station-nights)
+     * What it counts: The subset of Set 1 nights where a VALID GHCN daily minimum temperature observation (TMIN) was recorded on the morning date. Exactly 45 decoupled nights were dropped because the station did not report TMIN:
+       Chitradurga: 42 -> 39 (3 missing TMIN days)
+       Gadag:       46 -> 44 (2 missing TMIN days)
+       Karwar:     143 -> 129 (14 missing TMIN days)
+       Honavar:    192 -> 172 (20 missing TMIN days)
+       Goa/Panjim:  37 -> 31 (6 missing TMIN days)
+     * Code path: sih074-downscale-poc/analyze_f5_stations.py:72, 110-162 (reported in logs/item_f1_f5.log:185-202).
+
+   - Set 3 (F7 Retraction Table): 70 / 88 / 12 / 67 / 48 (Total = 285 nights = 5.20%)
+     * What it was: An unverified, erroneous transcription inserted into write_f6_f12_log.py:59 (reported in logs/item_f6_f12.log:55).
+     * Origin & Provenance: This count has ZERO code provenance on disk; no script in the repository produced 285. In that drafting step, coastal and inland counts were spuriously inverted and confabulated: Karwar was erroneously transcribed as 12 instead of 143, Honavar as 67 instead of 192, while Chitradurga and Gadag were inflated to 70 and 88.
+     * Karwar Specific Explanation: Karwar's movement from 143 to 12 was a transcription confabulation in write_f6_f12_log.py:59 where coastal calm nights were mistakenly substituted with unverified values.
+
+2. Canonical Designation:
+   - For METEOROLOGICAL regime frequency across all 1,096 nights: Set 1 (F3: 42 / 46 / 143 / 192 / 37, Total = 460) is CANONICAL.
+   - For GHCN-CONDITIONED residual validation: Set 2 (F5: 39 / 44 / 129 / 172 / 31, Total = 415 decoupled, 4,396 coupled) is CANONICAL.
+   - Set 3 (F7: 70/88/12/67/48, Total = 285) is FORMALLY RETRACTED AND SUPERSEDED.
+
+3. Domain-Wide Decoupled Share & Monthly Profile:
+   - Spatial domain-wide mean across domain_bbox [73.5, 13.0, 76.5, 17.5] across 1,096 nights: 7.23% is CONFIRMED (compute_f3_domain_stats.py:105, logs/item_f1_f5.log:77).
+   - Domain-wide monthly distribution:
+     Jan: 15.7% | Feb: 18.6% | Mar: 14.2% | Apr: 10.2% | May: 1.7% | Jun: 0.0%
+     Jul:  0.0% | Aug:  0.0% | Sep:  0.0% | Oct:  6.7% | Nov: 8.9% | Dec: 11.6%
+   - 5-Station pooled monthly distribution (mean 8.39% due to sheltered coastal valley stations Honavar and Karwar):
+     Jan: 19.78% (92/465) | Feb: 18.59% (79/425) | Mar: 16.34% (76/465) | Apr: 11.11% (50/450)
+     May:  3.44% (16/465) | Jun:  0.00% ( 0/450) | Jul:  0.00% ( 0/465) | Aug:  0.00% ( 0/465)
+     Sep:  1.11% ( 5/450) | Oct:  7.96% (37/465) | Nov:  8.67% (39/450) | Dec: 14.19% (66/465)
+
+================================================================================
+ITEM F14: MODIS PROBE WITH ELEVATION CONTROL & SIGN PREDICTION
+================================================================================
+1. Physical Sign Prediction (Stated Prior to Computation):
+   - Cold-air pooling mechanism: Nocturnal drainage causes dense cold air to accumulate in topographic hollows and valley floors (low TPI), while flanking ridges (high TPI) remain warmer. This predicts a POSITIVE correlation between TPI and LST: r(TPI, LST) > 0.
+   - Environmental lapse rate mechanism: Higher absolute elevations are colder due to atmospheric expansion: r(elevation, LST) < 0.
+   - Confounding interaction: Because ridges (high TPI) generally sit at higher absolute elevation (z), the lapse rate (cooling with elevation) and cold-air pooling (warming on ridges) oppose each other and partly cancel in raw correlation.
+   - Methodological isolation: To isolate microclimatic pooling, LST must first be regressed on absolute SRTM elevation across valid pixels (LST = alpha + beta * elev), and the partial correlation between the residual LST (epsilon) and TPI must be computed: r_partial = r(epsilon, TPI).
+   - Sign expectation: If cold-air pooling operates, r_partial MUST BE POSITIVE (valleys colder than expected for their elevation, ridges warmer than expected), and stronger on decoupled nights than on coupled nights.
+
+2. Elevation-Controlled Probe Results on the 3 Closed-Canopy Sinks (F12 Dataset):
+   - Node 1: Kudremukh / Chikmagalur (13.25°N, 75.50°E) [Within-cell TPI range 485.2 m]
+     * Decoupled (N=6 nights): Mean Valid Pixels = 376 | Elev Slope beta = +0.74 °C/km (std 1.88) | Raw r = +0.141 | Partial r(TPI, residual) = +0.074 (std 0.137)
+     * Coupled   (N=4 nights): Mean Valid Pixels = 294 | Elev Slope beta = +0.25 °C/km (std 3.49) | Raw r = +0.067 | Partial r(TPI, residual) = +0.145 (std 0.244)
+   - Node 2: Ratnagiri / Koyna Gorge (17.25°N, 73.75°E) [Within-cell TPI range 378.3 m]
+     * Decoupled (N=3 nights): Mean Valid Pixels = 270 | Elev Slope beta = +0.51 °C/km (std 5.45) | Raw r = -0.019 | Partial r(TPI, residual) = +0.046 (std 0.324)
+     * Coupled   (N=7 nights): Mean Valid Pixels = 187 | Elev Slope beta = -0.15 °C/km (std 2.96) | Raw r = +0.027 | Partial r(TPI, residual) = -0.004 (std 0.284)
+   - Node 3: Kali River Canyon (14.75°N, 74.25°E) [Within-cell TPI range 364.8 m]
+     * Decoupled (N=5 nights): Mean Valid Pixels = 154 | Elev Slope beta = +0.82 °C/km (std 1.54) | Raw r = +0.083 | Partial r(TPI, residual) = +0.064 (std 0.081)
+     * Coupled   (N=6 nights): Mean Valid Pixels = 101 | Elev Slope beta = -0.69 °C/km (std 6.02) | Raw r = +0.035 | Partial r(TPI, residual) = -0.011 (std 0.177)
+
+   POOLED CLOSED-CANOPY RESULTS (F14):
+   - Decoupled (N=14 nights): Mean Elevation Slope = +0.72 °C/km | Mean Raw r = +0.086 | Mean Partial r = +0.064 (std 0.149, median +0.060)
+   - Coupled   (N=17 nights): Mean Elevation Slope = -0.15 °C/km | Mean Raw r = +0.040 | Mean Partial r = +0.029 (std 0.249, median +0.018)
+
+3. Correction of Log Statement & Statistical Significance:
+   - In logs/item_f6_f12.log:207, the statement that +0.086 is "not stronger" than +0.040 was imprecise prose: numerically, +0.086 is greater than +0.040.
+   - However, statistical testing shows the difference is COMPLETELY INSIGNIFICANT:
+     * Fisher's z-transformation: z1 = atanh(0.086) = 0.0862, z2 = atanh(0.040) = 0.0400.
+     * Standard error of difference: SE = sqrt(1/(14-3) + 1/(17-3)) = 0.4029.
+     * Test statistic: z = (0.0862 - 0.0400) / 0.4029 = 0.1146.
+     * Two-tailed p-value: p = 0.9087.
+     * Partial correlation difference test: Welch's t = 0.485, p = 0.631.
+   - Conclusion: The observed correlation difference between decoupled and coupled nights is statistically indistinguishable from zero (p = 0.91).
+
+================================================================================
+ITEM F15: RETARGETING TO OPEN-TERRAIN SINK NODES
+================================================================================
+1. Land-Cover Product & Tree-Cover Cutoff:
+   - Product: Copernicus Global Land Service Land Cover 100m Collection 3 (COPERNICUS/Landcover/100m/Proba-V-C3/Global; Buchhorn et al., 2020, Remote Sens., 12(6), 1044, DOI: 10.3390/rs12061044).
+   - Band: 'tree-coverfraction' (continuous percentage 0–100%).
+   - Justification: Closed canopy measures tree-top temperature, insulating sub-canopy air. Open terrain (< 25% tree cover) exposes the true soil and ground vegetation to satellite radiometry.
+   - Cutoff Applied: Open terrain defined as cell mean tree-coverfraction < 25.0%. Across 210 populated nodes, 133 nodes meet this criterion.
+
+2. Candidate List of Open-Terrain Sink Nodes (Ranked by Within-Cell TPI Range):
+   - Rank 1: Node (17.50°N, 74.00°E) [i= 0, j= 2]: TPI Range = 358.8 m (min -154.6 m) | Tree Cover = 16.9% | Villages = 107 [Satara / Krishna Valley]
+   - Rank 2: Node (17.25°N, 74.00°E) [i= 1, j= 2]: TPI Range = 279.9 m (min -135.7 m) | Tree Cover = 20.0% | Villages = 256 [Karad / Patan Plateau]
+   - Rank 3: Node (15.00°N, 76.50°E) [i=10, j=12]: TPI Range = 209.0 m (min  -36.1 m) | Tree Cover = 11.4% | Villages =  22 [Sandur / Bellary Hills]
+   - Rank 4: Node (13.25°N, 76.00°E) [i=17, j=10]: TPI Range = 205.3 m (min  -50.0 m) | Tree Cover = 19.3% | Villages = 198 [Hassan Plateau]
+   - Rank 5: Node (13.50°N, 76.25°E) [i=16, j=11]: TPI Range = 188.7 m (min  -84.0 m) | Tree Cover = 13.5% | Villages = 186 [Kadur Plateau]
+
+3. Test Execution on Top 3 Open-Terrain Nodes (N = 30 Decoupled, N = 30 Coupled DJF Nights per Node):
+   - QC Bitmask Specification:
+     * Mandatory QA [bits 0-1] <= 1: LST produced (good quality or other quality checked).
+     * Data Quality [bits 2-3] == 0: Good data quality.
+     * LST Error [bits 6-7] <= 1: Average LST error <= 2 K.
+     * Raw LST > 0.
+   - Results by Node:
+     * Node 1: Satara / Krishna Valley (17.50°N, 74.00°E)
+       - Decoupled: Surviving = 11 / 30 (36.7%) | Pixels = 232 | Elev Slope = +5.30 °C/km | Raw r = +0.168 | Partial r = -0.147 (std 0.182)
+       - Coupled:   Surviving = 13 / 30 (43.3%) | Pixels = 164 | Elev Slope = +3.29 °C/km | Raw r = +0.111 | Partial r = -0.111 (std 0.121)
+     * Node 2: Karad / Patan Plateau (17.25°N, 74.00°E)
+       - Decoupled: Surviving =  8 / 30 (26.7%) | Pixels = 183 | Elev Slope = +3.24 °C/km | Raw r = +0.168 | Partial r = -0.119 (std 0.164)
+       - Coupled:   Surviving = 11 / 30 (36.7%) | Pixels = 221 | Elev Slope = +3.43 °C/km | Raw r = +0.188 | Partial r = -0.031 (std 0.221)
+     * Node 3: Sandur / Bellary Hills (15.00°N, 76.50°E)
+       - Decoupled: Surviving = 12 / 30 (40.0%) | Pixels = 202 | Elev Slope = +0.48 °C/km | Raw r = +0.079 | Partial r = +0.036 (std 0.203)
+       - Coupled:   Surviving = 13 / 30 (43.3%) | Pixels = 223 | Elev Slope = -1.46 °C/km | Raw r = +0.078 | Partial r = +0.041 (std 0.169)
+
+   POOLED OPEN-TERRAIN RESULTS (F15):
+   - Decoupled Surviving Nights: 31 / 90 nights (34.4%) | Mean Valid Pixels = 208
+     * Mean Elevation Slope: +2.90 °C/km (broad-scale winter nocturnal inversion across plateau)
+     * Mean Partial r(TPI, residual): -0.069 (std 0.204, median -0.100)
+   - Coupled Surviving Nights:   37 / 90 nights (41.1%) | Mean Valid Pixels = 202
+     * Mean Elevation Slope: +1.66 °C/km
+     * Mean Partial r(TPI, residual): -0.034 (std 0.184, median -0.051)
+
+4. Statistical Significance & Open-Terrain Verdict:
+   - Difference test of Partial r (Decoupled vs Coupled): Welch's t = -0.7335, p = 0.4661.
+   - The partial correlation between microtopographic position (TPI) and elevation-controlled residual LST in open terrain is NEGATIVE (-0.069), with no significant difference between decoupled and coupled regimes (p = 0.47).
+   - While a broad regional elevation inversion (+2.90 °C/km) is evident over the plateau, sub-grid topographic hollows exhibit ZERO cold-air pooling signal at the 1 km satellite scale.
+
+================================================================================
+ITEM F16: CLOSING REGISTRATION FAULTS & TPI EDGE AUDIT
+================================================================================
+1. Resolution of Swamymalai Block F Boundary Fault:
+   - Feature: Swamymalai Block F (ka.geojson:26418, centroid Lat=15.02598°N, Lon=76.56186°E).
+   - Fault: The centroid lies 0.0099° (~1.06 km, 4.4 pixels) east of the DEM boundary (76.551969°E). In compute_f4_village_tpi.py:45-46, np.clip silently forced col index 1386.4 -> 1381, substituting the boundary pixel value.
+   - Action: Silent clip is REMOVED and REPLACED WITH UNAVAILABLE (NaN).
+   - Sampling Path Confirmation: Code inspection of compute_f4_village_tpi.py confirms no other silent fallback or substitution exists.
+
+2. Edge-Truncated Neighbourhood Audit:
+   - 2 km Neighbourhood Edge-Truncation: Exactly 6 / 16,943 villages (0.04%) lie within 2 km of the DEM bounding box edges. Marked as edge-truncated.
+   - 5 km Neighbourhood Edge-Truncation: Exactly 176 / 16,943 villages (1.04%) lie within 5 km of the DEM bounding box edges. Marked as edge-truncated.
+   - Extreme Lists Audit: Exactly 0 / 10 top sinks and 0 / 10 top ridges in the flagship R = 2,000 m ranking are edge-truncated. All 20 extreme villages sit well in the interior of the DEM domain.
+
+3. Reconciliation of TPI Distribution Change (F4 vs F9):
+   - True Village TPI Distribution (R = 2,000 m, with Swamymalai = NaN):
+     Mean = -4.12 m, Std = 23.91 m | Min = -230.60 m, P1 = -82.26 m, P25 = -9.79 m, Median = -2.98 m, P75 = +3.04 m, P99 = +72.86 m, Max = +354.82 m.
+   - Reconciliation: F4 correctly reported mean -4.11 m, std 23.92 m (with Swamymalai clipped). In F9, the figures mean -3.85 m and std 27.24 m were erroneously transcribed in write_f6_f12_log.py:93 (where -3.85 was confabulated from the -3.85 °C temperature anomaly of Dattathreya Peeta). The underlying array data/cache/village_tpi_results.npz was never recomputed. The true distribution parameters are Mean = -4.12 m, Std = 23.91 m.
+
+4. Resolvable Population Analysis:
+   - Central Mass: Median village TPI = -2.98 m.
+   - DEM Discrepancy: Standard deviation of 250m DEM pixel elevation vs 30m polygon mean = 27.14 m (mean discrepancy -5.79 m).
+   - Signal-to-Noise Comparison: The median TPI (-2.98 m) is ~9x smaller than the DEM representation uncertainty (27.14 m).
+   - Resolvable Population: Exactly 2,183 / 16,943 villages (12.88%) have |TPI_2km| > 27.14 m.
+   - Conclusion: Only 12.88% of villages have a topographic position signal that exceeds DEM representation noise. For the remaining 87.12% of villages, the TPI classification is unresolvable and sits in the sub-grid DEM noise floor.
+
+================================================================================
+ITEM F17: NOCTURNAL WARM BIAS & COASTAL ALTERNATIVE
+================================================================================
+1. Residual Definition Clarification:
+   - The reported coupled nocturnal bias of -1.51 °C (n = 4,396) is defined against LAPSE-CORRECTED ERA5:
+     Residual = T_obs - (T_ERA5_node - Gamma * (z_station - z_ERA5_node)), where Gamma = 6.5 °C/km.
+   - Defined against RAW ERA5 (without lapse-rate adjustment), the pooled coupled residual is -1.38 °C (std 1.35 °C, n = 4,396).
+   - Station breakdown (Raw vs Lapse-Corrected):
+     * Chitradurga: Raw = -1.29 °C | Lapse-Corrected = -1.03 ± 0.033 °C (std 1.04 °C, n=999) [dz = +40.9 m, lapse adj = -0.27 °C]
+     * Gadag:       Raw = -1.50 °C | Lapse-Corrected = -1.36 ± 0.030 °C (std 0.95 °C, n=965) [dz = +21.3 m, lapse adj = -0.14 °C]
+     * Karwar:      Raw = -0.63 °C | Lapse-Corrected = -1.24 ± 0.057 °C (std 1.56 °C, n=738) [dz = -92.5 m, lapse adj = +0.60 °C]
+     * Honavar:     Raw = -0.95 °C | Lapse-Corrected = -1.45 ± 0.043 °C (std 1.18 °C, n=753) [dz = -76.3 m, lapse adj = +0.50 °C]
+     * Goa/Panjim:  Raw = -2.28 °C | Lapse-Corrected = -2.44 ± 0.046 °C (std 1.41 °C, n=941) [dz = -25.3 m, lapse adj = +0.16 °C]
+
+2. Competing Explanation: Land Fraction vs Nocturnal Warm Bias:
+   - Land Fraction (LSM from ECMWF/ERA5/HOURLY):
+     Chitradurga = 0.9932, Gadag = 0.9997, Karwar = 0.6361, Honavar = 0.7251, Goa/Panjim = 0.3253.
+   - Correlation across the five stations (n = 5):
+     Pearson r(land_fraction, lapse_corrected_bias) = +0.8435 (p = 0.0725, n = 5).
+   - Linear Regression: Bias = -2.717 + (+1.651 * land_fraction) [SE of slope = 0.607].
+   - Finding: The extreme coastal bias at Goa (-2.44 °C) is heavily driven by marine exposure in its 0.25° grid cell (which is 67.5% ocean). As land fraction increases to 1.0, the bias attenuates to -1.07 °C (closely matching the pure inland plateau mean of -1.19 °C).
+
+3. Literature DOIs for ECMWF Stable Boundary Layer Over-Mixing:
+   - Sandu, I., A. Beljaars, P. Bechtold, T. Mauritsen, and G. Balsamo (2013), "Why is it so difficult to represent stably stratified conditions in numerical weather prediction (NWP) models?", Journal of Advances in Modeling Earth Systems, 5(2), 117–133. DOI: 10.1002/jame.20013.
+     (Documents operational turbulent diffusion formulations in ECMWF IFS maintaining excessive nocturnal mixing, leading to a persistent warm bias in nocturnal 2m temperatures).
+   - Holtslag, A. A. M., et al. (2013), "Stable Atmospheric Boundary Layers and Diurnal Cycles: Challenges for Models and Observations", Bulletin of the American Meteorological Society, 94(11), 1691–1706. DOI: 10.1175/BAMS-D-11-00187.1.
+
+4. Monthly & Seasonal Profile of Pooled Coupled Bias (Lapse-Corrected):
+   - Monthly:
+     Jan: -2.47 °C (std 1.59, n=356) | Feb: -2.19 °C (std 1.52, n=330) | Mar: -1.54 °C (std 1.42, n=370)
+     Apr: -1.23 °C (std 0.87, n=370) | May: -1.14 °C (std 1.36, n=384) | Jun: -1.25 °C (std 0.93, n=356)
+     Jul: -0.90 °C (std 0.74, n=389) | Aug: -0.79 °C (std 0.72, n=390) | Sep: -1.03 °C (std 0.81, n=373)
+     Oct: -1.37 °C (std 1.19, n=369) | Nov: -2.11 °C (std 1.34, n=356) | Dec: -2.34 °C (std 1.58, n=353)
+   - Seasonal:
+     DJF  (Winter):       -2.33 °C (std 1.57, n=1,039)
+     MAM  (Pre-Monsoon):  -1.30 °C (std 1.25, n=1,124)
+     JJAS (Monsoon):      -0.99 °C (std 0.82, n=1,508)
+     ON   (Post-Monsoon): -1.74 °C (std 1.32, n=  725)
+
+5. Supportability Assessment:
+   - With only five synoptic stations (two inland plateau, three coastal with variable marine contamination), sample size (n = 5) is critically underpowered.
+   - Neither a fixed scalar nocturnal offset nor a land-fraction-dependent parameterization can be defensibly validated without high risk of overfitting and geographical confounding.
+   - Standing constraint maintained: NO model correction is applied this round.
+
+================================================================================
+STAGE 1 FINAL DECISION: FROST FEATURE
+================================================================================
+VERDICT: NO-GO.
+
+NULL OUTCOME APPLIED: THE AVAILABLE INSTRUMENTS CANNOT SEE IT.
+
+EVIDENCE:
+1. Station Network Geometry: All available synoptic stations occupy the topographically neutral center of the landscape (TPI span 18.59 m, between 28th and 84th percentiles), with exactly ZERO stations located in terrain hollows (TPI < -50 m). The station network cannot observe nocturnal pooling.
+2. Canopy Decoupling: In the escarpment canyons where terrain relief is strongest, closed forest canopy insulates the sub-canopy air, rendering satellite thermal radiometry (MODIS 1km LST) blind to surface drainage.
+3. Satellite Scale Mismatch: In open-terrain plateau valleys, when broad elevation is controlled, the partial correlation between microtopographic position and residual LST is statistically indistinguishable from zero (r_partial = -0.069 decoupled vs -0.034 coupled, Welch's t = -0.73, p = 0.47). A 1 km satellite pixel averages over local drainage channels, smoothing out the phenomenon.
+4. DEM Noise Floor: 87.12% of domain villages have |TPI| < 27.14 m, placing them below the representation uncertainty between the 250m DEM and true terrain elevation.
+
+The physical mechanism of cold-air drainage is not disproven in nature, but because the available instruments (0.25° ERA5, 5 neutral synoptic stations, and 1km MODIS LST) cannot observe, calibrate, or validate it, building a downscaled pool-filling, shoreline, or frost-dose product would be speculative and unscientific. The feature is formally terminated.
+================================================================================

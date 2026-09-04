@@ -1,0 +1,75 @@
+ITEM K, L, E EXECUTION LOG
+==========================
+
+ITEM K — Confirmation of Dead Era Code Paths
+--------------------------------------------
+1. Codebase search results:
+   - corrections.py:
+     * Line 212–228: era_anomaly and era_pct calculation disabled with comment:
+       '# ITEM 4: Era bias check — WITHDRAWN in Update 6 (logs/item_cdg.log, logs/item_hij.log).'
+       '# Period bias is controlled by matched-year evaluation; external scalar era adjustments are withdrawn.'
+     * Line 250–260: summary table output updated to remove Era % column and output ddof=1 std alongside
+       baseline and month fill columns.
+   - chirps_sourced.py:
+     * No climate era logic exists (string match was 'deliberate choice as leeward').
+   - item0ef.py:
+     * Contains no era calculation logic.
+   - item_cdg.py:
+     * Contains record of Item C withdrawal decision.
+   - compute_hij.py:
+     * Contains no era calculation logic.
+   - items_2_3_4.py:
+     * Contains only 30-year climatological mean of Hosaritti coordinates comparison, no era anomaly/adjustment.
+
+2. Re-run verification:
+   - corrections.py re-run in background task-2713:
+     Output confirms summary table emits:
+     'Station | Role | Elev | n | Years | Ratio raw (LB) | std(ddof=1) | Ratio adj (base) | Ratio adj (month)'
+     No era column or era numbers reappear.
+
+
+ITEM L — End-to-End Verification of Section C.5 Table
+------------------------------------------------------
+On-disk representation in docs/feasibility_gate.md:
+
+| Station | Role | GHCN elev | DEM cell | Relief | n | Years | **Ratio raw (LB)** | std (ddof=1) | Ratio adj (season baseline) | Ratio adj (month fill) |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Mahabaleshwar | windward | 1382 m `[ghcnd:38702]` | 1326 m `[task-2115:5]` | 56 m `[task-2458:6]` | 5 | 2016–2020 `[task-2458:20]` | **3.381** `[task-2458:32]` | 0.862 `[item_kle.log:24]` | 3.855 `[item0a.py:58]` | 3.789 `[item_hij.log:21]` |
+| Kolhapur | leeward | 570 m `[ghcnd:38598]` | 540 m `[task-2458:7]` | 30 m `[task-2458:7]` | 4 | 2017–2020 `[task-2458:49]` | **1.564** `[task-2458:60]` | 0.357 `[task-2713:146]` | 1.875 `[item0a.py:60]` | 1.862 `[item_hij.log:22]` |
+| Belgaum/Sambra | leeward | 747 m `[ghcnd:37666]` | 737 m `[task-2458:8]` | 10 m `[task-2458:8]` | 14 | 1996–2019 `[task-2458:77]` | **0.935** `[task-2458:98]` | 0.313 `[task-2713:147]` | 1.114 `[item0a.py:62]` | 1.099 `[item_hij.log:23]` |
+| Sholapur | leeward | 479 m `[ghcnd:38714]` | 444 m `[task-2458:9]` | 35 m `[task-2458:9]` | 4 | 1993–1996 `[task-2458:115]` | **1.163** `[task-2458:126]` | 0.218 `[task-2713:148]` | 1.374 `[item0a.py:64]` | 1.375 `[item_hij.log:24]` |
+
+Cell Confirmation:
+- Raw ratios (LB): 3.381 / 1.564 / 0.935 / 1.163 [CONFIRMED MATCH]
+- Season baseline adj: 3.855 / 1.875 / 1.114 / 1.374 [CONFIRMED MATCH]
+- Month fill adj: 3.789 / 1.862 / 1.099 / 1.375 [CONFIRMED MATCH]
+- Discrepancies flagged: None. All cells match exactly.
+
+
+ITEM E — The ±0.86 Correction and Additional Records
+----------------------------------------------------
+1. ddof=1 vs ddof=0 Recomputation:
+   - Sum of squared deviations for Mahabaleshwar per-season ratios: SS = 2.9702172
+   - ddof=0 (population std, n=5): sqrt(2.9702172 / 5) = 0.770742 ≈ 0.771 [task-2458:34]
+   - ddof=1 (sample std, n=5): sqrt(2.9702172 / 4) = 0.861716 ≈ 0.862 [item_kle.log:24]
+   - ddof=1 is statistically correct for sample estimation at n=5.
+   - Label: 'sample standard deviation of per-season ratios, ddof=1, n=5'.
+   - Updated in Section C.6 deck sentence: '3.38 ± 0.86 [sample standard deviation of per-season ratios, ddof=1, n=5]'.
+   - Updated in Section C.5 summary table (0.862) and Section C.3 (0.862).
+   - Void value 3.389 under Item C confirmed NOT reintroduced.
+
+2. Robustness Statement:
+   - Raw 3.381 versus month-filled 3.789 is a spread of ~0.41 (~12%), against a CHIRPS disagreement
+     of ~3.4x, so the crest under-catch is robust to fill method by roughly an order of magnitude.
+
+3. Plateau Seasonality Record:
+   - Belgaum's monthly rates are nearly flat (Jun 6.55 vs season 6.75 mm/day), unlike Mahabaleshwar's
+     2.8x shoulder-to-peak contrast, consistent with weak orographic seasonality on the plateau.
+
+4. Testability Note Amendment:
+   - Testing dropout against gridded satellite fields tests against CHIRPS itself, which is circular.
+   - Neighbouring GHCN gauges — Satara (IN012220100), Radhanagari (IN012130200), and Hubballi (IN009090200) —
+     are the non-circular route.
+   - Cache check: Satara and Radhanagari CSVs contain 0 observations, and Hubballi daily data is not present
+     in cache; thus none overlap the dropout dates. Non-circular verification is currently untestable with
+     available cache data.

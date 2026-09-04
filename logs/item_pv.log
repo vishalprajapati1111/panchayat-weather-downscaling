@@ -1,0 +1,152 @@
+ITEM P THROUGH V EXECUTION LOG
+===============================
+
+ITEM P — Belgaum Station Roles & 9 km Offset Definition
+-------------------------------------------------------
+1. Temperature Validation Station:
+   - Station ID supplying TMAX/TMIN station-days: IN009021000 (BELGAUM/SAMBRA, 15.8500°N, 74.6170°E, 747.0 m).
+   - Source: run_validation.py lines 15, 34–50; audit_part2.py; data/cache/ghcn_daily/IN009021000_parsed.csv (14,718 TMAX observations).
+   - IN009021100 (BELGAUM town observatory, 753.0 m) has only 1 TMAX observation in GHCN cache (data/cache/ghcn_daily/IN009021100_parsed.csv: line 2)
+     and was NEVER a temperature validation station.
+
+2. Definition of 'Endpoint' and the 9 km Offset in C.7:
+   - The 9 km figure does NOT measure an offset between rainfall and temperature validation stations; both tracks used IN009021000 (Sambra airport).
+   - The 9 km figure measures the distance between the originally targeted leeward transect contrast pair endpoint (Belgaum town, IN009021100, 15.8500°N, 74.5330°E)
+     and the actual reporting weather station whose gauge data was ingested (Belgaum/Sambra airport, IN009021000, 15.8500°N, 74.6170°E).
+   - Delta lon = 74.6170° - 74.5330° = 0.084° ≈ 9.0 km.
+   - Section C.7 updated to state explicitly that IN009021000 supplied both rainfall and temperature data, while IN009021100 was solely the transect pair coordinate.
+
+
+ITEM Q — Cell-Centre Point Query Mislabelling & Endpoint Details
+----------------------------------------------------------------
+1. Renaming on disk:
+   - Renamed in C.1 and C.5 to: 'Station elev − DEM point at cell centre [POINT QUERY, NOT AREAL MEAN]'.
+   - Corrected Update 6 0d item 3 to state: 'DEM point at cell centre 1326 m: gate.py DEM lookup task-2115:5 [POINT QUERY, NOT AREAL MEAN]'.
+   - All '30 m DEM' attributions attached to these four numbers removed from disk.
+
+2. Query details per station:
+   - Mahabaleshwar:
+     * Service URL: https://api.open-meteo.com/v1/elevation?latitude=17.92&longitude=73.66 [gate.py:109-111, task-2115:5]
+     * Requested lat/lon: 17.92°N, 73.66°E
+     * Returned elevation: 1326 m
+     * Service native resolution: unavailable (open-meteo uses 90m SRTM/GTOPO30 depending on region; undocumented locally)
+   - Kolhapur:
+     * Service URL: https://api.open-elevation.com/api/v1/lookup?locations=16.7250,74.2250 [corrections.py:71-74, task-2458:7]
+     * Requested lat/lon: 16.7250°N, 74.2250°E
+     * Returned elevation: 540 m
+     * Service native resolution: unavailable (open-elevation API native resolution is undocumented locally)
+   - Belgaum/Sambra:
+     * Service URL: https://api.open-elevation.com/api/v1/lookup?locations=15.8750,74.6250 [corrections.py:71-74, task-2458:8]
+     * Requested lat/lon: 15.8750°N, 74.6250°E
+     * Returned elevation: 737 m
+     * Service native resolution: unavailable
+   - Sholapur:
+     * Service URL: https://api.open-elevation.com/api/v1/lookup?locations=17.6750,75.8750 [corrections.py:71-74, task-2458:9]
+     * Requested lat/lon: 17.6750°N, 75.8750°E
+     * Returned elevation: 444 m
+     * Service native resolution: unavailable
+
+   * Peak-minus-cell-mean status: unavailable across all 4 stations [item_pv.log:50–53].
+
+
+ITEM R — DEM Provenance for Village Statistics
+----------------------------------------------
+Report on provenance of the headline set:
+1. Originating script & log:
+   - Script: run_mh_stats.py lines 121–163
+   - Log: task-1947.log lines 18–58 (also task-1896.log)
+2. Elevation source actually read:
+   - Earth Engine cloud asset: 'USGS/SRTMGL1_003' (SRTM 1 arc-second Global) [run_mh_stats.py:121]
+3. Native resolution:
+   - 1 arc-second (~30 m). Coarse reanalysis projection evaluated against ECMWF/ERA5/DAILY projection (~0.25° / 28 km).
+4. Polygon-mean vs point sample:
+   - 16,945 village statistics (12.5% > 100m, 6.7% > 150m, p99=321m, max=610.7m): Computed via ee.Reducer.mean() across each village polygon at scale=30m (run_mh_stats.py:132). These ARE polygon means.
+   - Specific named points (Amboli 590.9 m, Koynanagar 212.7 m, Radhanagari 93.4 m): Computed via ee.Reducer.first() at point coordinates (run_mh_stats.py:161). These are point samples.
+5. Discrepancy with PROVENANCE.md:
+   - PROVENANCE.md marked SRTM 30m as 'Not yet fetched' because no local raster files were downloaded into data/engine_cache/dem/. The computation was executed via Google Earth Engine API rather than local raster files.
+   - Retraction of phrases: Relabelled Amboli 591 m as a point sample rather than a village average.
+
+
+ITEM S — Belgaum Regime Break Analysis (14 Seasons)
+---------------------------------------------------
+1. Season-by-season breakdown (from analyze_belgaum_regime.py & IN009021000.csv):
+   Year  Present  Zero-days (%)    Pos-days  Total mm   Max mm  Flags present
+   ------------------------------------------------------------------------------
+   1996       97     49 (50.5%)          48     420.0     55.1  {'D,,S', ',,S'}
+   1998      107     36 (33.6%)          71     521.7     53.1  {'D,,S', ',,S'}
+   2003      111     40 (36.0%)          71     263.0     55.1  {'D,,S', ',,S'}
+   2004      110     32 (29.1%)          78     526.7     59.9  {'D,,S', ',,S'}
+   2005      106     22 (20.8%)          84     915.0     85.1  {'D,,S', ',,S'}
+   2006       99     12 (12.1%)          87     820.8     55.9  {',,S'}
+   2007      100     12 (12.0%)          88     993.3     98.0  {',,S'}
+   2008       99     18 (18.2%)          81     615.9     56.9  {',,S'}
+   2011      101     15 (14.9%)          86     572.2     49.0  {',,S'}
+   2013      109     11 (10.1%)          98     734.6     40.4  {',,S'}
+   2014       99     15 (15.2%)          84     690.2     92.7  {',,S'}
+   2016       97     19 (19.6%)          78     671.8     75.9  {',,S'}
+   2018       98      9 ( 9.2%)          89     566.4     45.5  {',,S'}
+   2019      101     15 (14.9%)          86    1374.4    148.1  {',,S'}
+
+2. Regime Break Confirmation:
+   - Pre-2004 carries an anomalous share of zero-valued days: 39.7% of days are recorded as 0.0 mm (up to 50.5% in 1996),
+     and carries the 'D' flag (multiday accumulation / untagged dry gaps).
+   - Post-2005 zero frequency drops to ~14%, consistent with continuous daily gauge operation.
+   - Pre-2004 subset (1996, 1998, 2003; n=3):
+     * ratio-of-means: 0.561
+     * mean-of-ratios: 0.557
+     * SS: 0.001279
+     * std (ddof=1): 0.025
+   - 2004-onward subset (11 seasons: 2004–2019):
+     * ratio-of-means: 1.032
+     * mean-of-ratios: 1.047
+     * SS: 0.702546
+     * std (ddof=1): 0.265
+   - 2019 Spike: August 6–8, 2019 contributed 382.1 mm (109.0 + 125.0 + 148.1 mm), accounting for 28% of the seasonal total.
+   - Conclusion: The pooled 14-season ratio of 0.935 mixes two reporting regimes. Entered into Section C.7 as reason (3).
+
+
+ITEM T — Systematic Neighbour Gauge Inventory Audit
+---------------------------------------------------
+1. Verbatim PRCP rows in data/cache/ghcnd-inventory.txt:
+   IN009090200  15.3300   75.1300 PRCP 1901 1970
+   IN012130200  16.3300   73.9800 PRCP 1934 1970
+   IN012220100  17.6800   73.9800 PRCP 1901 1970
+   * Hubballi IN009090200 ceased recording in 1970 (no PRCP after 1970).
+
+2. Indian Stations within 75 km overlapping 1991–2020:
+   - Mahabaleshwar (2016–2020):
+     * 61.4 km | IN012201300 | HARNAI | elev: 20.0 m | PRCP: 1951–2024
+     * 69.5 km | IN012190100 | POONA  | elev: 559.0 m | PRCP: 1901–2025
+   - Kolhapur (2017–2020):
+     * 42.5 km | IN012212400 | SANGLI | elev: 549.0 m | PRCP: 1970–2023
+   - Belgaum/Sambra (1996–2019): None within 75 km in GHCN inventory overlapping 1991–2020.
+   - Sholapur (1993–1996): None within 75 km in GHCN inventory overlapping 1991–2020.
+   - Outcome: The blanket claim 'no non-circular test is possible' is WITHDRAWN. Candidate gauges exist for Mahabaleshwar
+     and Kolhapur, though they occupy contrasting topographic zones (Harnai is coast, Pune/Sangli are dry plateau).
+
+
+ITEM U — Update 7 Logging & Audit Verification
+----------------------------------------------
+1. Update 7 logged in docs/feasibility_gate.md:
+   - Documents the removal of the definitional-gap clause from C.6 deck sentence.
+   - Records before and after text verbatim, reason (peak-minus-cell-mean unavailable), and condition for reinstatement.
+   - Records Belgaum regime break.
+2. Confirmations:
+   - Updates 1–6 are confirmed byte-unchanged.
+   - No ±0.77 survives in active results.
+   - Mahabaleshwar ±0.86 carries label 'sample standard deviation of per-season ratios, ddof=1, n=5'.
+   - Kolhapur 0.357 (SS=0.382, n=4), Belgaum 0.313 (SS=1.270, n=14), Sholapur 0.218 (SS=0.142, n=4) each carry the ddof=1 label with SS and n.
+
+
+ITEM V — Completeness Threshold Reconciliation
+----------------------------------------------
+1. Code constant in corrections.py line 21:
+   `THRESHOLD_80 = 97   # 80% of 122`
+   - Operational threshold in code is strictly 80% (97 days).
+2. Season count comparison (80% vs 70% / 86 days):
+   - Mahabaleshwar: n=5 at 80%; gains 0 at 70% (n=5).
+   - Kolhapur: n=4 at 80%; gains 1 season (2016, 93 days) at 70% (n=5).
+   - Belgaum/Sambra: n=14 at 80%; gains 9 seasons (1994, 1995, 1997, 2001, 2002, 2009, 2012, 2017, 2020) at 70% (n=23).
+   - Sholapur: n=4 at 80%; gains 3 seasons (1991, 1992, 2005) at 70% (n=7).
+3. Prose correction:
+   - Updated docs/deterministic_validation.md line 10 to clarify 80% (97 days) code threshold vs 70% exploratory screening.

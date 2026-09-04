@@ -1,0 +1,175 @@
+ITEM BC THROUGH BL EXECUTION LOG
+=================================
+
+ITEM BD — Resolution of Arithmetic Bound Violation & Grid Alignment
+---------------------------------------------------------------------
+1. Cause of Spurious +993.7 m:
+   - In compute_au_distribution.py, feature centroids were extracted from all 16,945 ingested polygons,
+     while signed_village_results.json contained 16,943 successfully reduced polygons (2 null polygons omitted).
+   - A 2-position list index offset caused feature 14,810 (Kalambe in Satara, lat 17.51°N, elev 1032.6 m)
+     to be evaluated against the centroid of a coastal polygon at lat 15.75°N, lon 73.75°E (ERA5 elev 38.9 m),
+     producing 1032.6 - 38.9 = +993.7 m.
+   - When each polygon is correctly matched to its own geometry via its whitelisted src_file and idx,
+     zero bound violations occur: maximum dz_ERA5 is +640.5 m, well below the theoretical ceiling of 865.8 m.
+2. Grid & Registration Audits:
+   - Distinct 0.25° cells containing at least one village: 210 cells.
+   - All 210 cells sit strictly INSIDE the 239-cell comparison set (0 cells outside).
+   - Sampling method: Cell-centre nearest-neighbour matching the 239-cell comparison.
+   - Longitude convention of ARCO: 0° to 360° (converted to 73.5° to 76.5°E; compare_orography_grids.py:11).
+   - Latitude ordering: 17.5°N down to 13.0°N (descending).
+   - Registration: Cell-centre registered (coinciding with Earth Engine reduceResolution grid).
+3. Record Carrying Erroneous +993.7 m:
+   - Village: Kalambe (MH, Satara district, Patan taluka, code 7745).
+   - Polygon-mean fine elevation: 1032.6 m.
+   - SRTM coarse height in village polygon: 851.8 m (true signed dz_SRTM = +180.8 m).
+   - True nearest ERA5 cell: lat 17.50°N, lon 74.00°E (ERA5 elev 839.2 m).
+   - True signed dz_ERA5 for Kalambe: 1032.6 - 839.2 = +193.4 m (well within bounds).
+
+
+ITEM BC — Product Claim on ARCO ERA5 Model Orography
+----------------------------------------------------
+1. Restated Product Claim:
+   Across 16,943 villages, 8.28% (1,403 villages) exceed the ±150 m (~1.0 °C) lapse-rate threshold against ERA5 model orography—4.37% (741 villages) require cooling adjustments up to −4.16 °C (Dattathreyapeeta, KA, +640.5 m) and 3.91% (662 villages) require warming adjustments up to +3.37 °C (Nagave, MH, −519.0 m)—demonstrating that forecast orographic smoothing produces substantial bidirectional temperature errors.
+2. Role Separation:
+   - ARCO ERA5 Model Orography (geopotential_at_surface / 9.80665) is the correct denominator for forecast terrain bias.
+   - Area-averaged SRTM is a terrain-roughness diagnostic (subgrid elevation variance).
+   - The ERA5-based material count (1,403 villages, 8.28%) exceeds the subgrid roughness count (984 villages, 5.81%)
+     because spectral model smoothing depresses mountain crests (domain min offset −255.1 m, mean −15.6 m),
+     adding model truncation bias on top of subgrid terrain variance.
+3. Top 10 Villages by Signed dz_ERA5:
+   - Positive (Cooling):
+     1. Dattathreyapeeta (KA, code 21692): fine=1547.9m, ERA5=907.5m, dz=+640.5m, dT=-4.16°C
+     2. Torane (MH, code 9058): fine=967.2m, ERA5=362.3m, dz=+604.9m, dT=-3.93°C
+     3. Samse (KA, code 22013): fine=1091.9m, ERA5=490.2m, dz=+601.7m, dT=-3.91°C
+     4. Humbarli (MH, code 9059): fine=951.6m, ERA5=362.3m, dz=+589.3m, dT=-3.83°C
+     5. Chandel (MH, code 7511): fine=849.0m, ERA5=266.0m, dz=+583.0m, dT=-3.79°C
+     6. Halagadaka Estate (KA, code 22152): fine=1235.5m, ERA5=658.4m, dz=+577.0m, dT=-3.75°C
+     7. Kudremukh Notified Area Nac (KA, code 22063): fine=990.2m, ERA5=426.0m, dz=+564.2m, dT=-3.67°C
+     8. [Unnamed] (MH, code 7509): fine=828.9m, ERA5=266.7m, dz=+562.2m, dT=-3.65°C
+     9. Balur Estate (KA, code 22145): fine=1218.4m, ERA5=658.4m, dz=+560.0m, dT=-3.64°C
+    10. [Unnamed] (MH, code 7508): fine=897.7m, ERA5=342.1m, dz=+555.6m, dT=-3.61°C
+   - Negative (Warming):
+     1. Nagave (MH, code 10694): fine=73.4m, ERA5=592.3m, dz=-519.0m, dT=+3.37°C
+     2. Ghotgewadi (MH, code 5343): fine=79.9m, ERA5=592.3m, dz=-512.4m, dT=+3.33°C
+     3. Aynode (MH, code 5342): fine=122.5m, ERA5=592.3m, dz=-469.8m, dT=+3.05°C
+     4. Bamnoli (MH, code 11653): fine=148.2m, ERA5=614.8m, dz=-466.6m, dT=+3.03°C
+     5. Indabettu (KA, code 20318): fine=126.7m, ERA5=584.2m, dz=-457.5m, dT=+2.97°C
+     6. Mundaje (KA, code 20360): fine=129.5m, ERA5=584.2m, dz=-454.7m, dT=+2.96°C
+     7. Kanyady (KA, code 20352): fine=135.4m, ERA5=584.2m, dz=-448.8m, dT=+2.92°C
+     8. Kadirudyavara (KA, code 20316): fine=137.5m, ERA5=584.2m, dz=-446.7m, dT=+2.90°C
+     9. Thotathady (KA, code 20362): fine=144.9m, ERA5=584.2m, dz=-439.3m, dT=+2.86°C
+    10. Mithabagilu (KA, code 20295): fine=150.1m, ERA5=584.2m, dz=-434.1m, dT=+2.82°C
+
+
+ITEM BE — Polygon Property Whitelist & Feature Disambiguation
+--------------------------------------------------------------
+1. Disambiguation:
+   - BB conflated feature 7508 and Torane. They are two distinct polygons in Shirala taluka, Sangli district, MH.
+   - Feature 7508: dz_SRTM = +610.7 m.
+   - Torane (feature 9058): dz_SRTM = +604.9 m.
+2. Property Inspection for Codes 7508, 7509, 7511 in mh2.geojson:
+   - Feature 7508: {'SUB_DIST': 'Shirala', 'DISTRICT': 'Sangali', 'STATE': 'Maharashtra', 'TYPE': 'village', 'NAME': '', 'CEN_2001': '2753104295'}
+   - Feature 7509: {'SUB_DIST': 'Shirala', 'DISTRICT': 'Sangali', 'STATE': 'Maharashtra', 'TYPE': 'village', 'NAME': '', 'CEN_2001': '2753104295'}
+   - Feature 7511: {'SUB_DIST': 'Shahuwadi', 'DISTRICT': 'Kolhapur', 'STATE': 'Maharashtra', 'TYPE': 'village', 'NAME': 'Chandel', 'CEN_2001': '275300428304177100'}
+3. Cause of Empty Name:
+   - The source GeoJSON file (mh2.geojson) literally contains an empty string (NAME: '') for features 7508 and 7509.
+   - Administrative identification: Taluka Shirala, District Sangli, Census Code 2753104295.
+   - First named village by signed SRTM delta z: Torane (feature 9058, Shirala taluka, +604.9 m).
+
+
+ITEM BF — Formal Retraction of Amboli as Flagship
+-------------------------------------------------
+1. Amboli Discrepancy:
+   - True polygon mean: dz = +130.3 m (implied dT = -0.85 °C). Sits below the 150 m threshold.
+   - Prior point sample: 590.9 m (dT = -3.84 °C). Overstated village mean relief by 4.53x.
+2. Actions Taken on Disk:
+   - Updated docs/deterministic_validation.md line 116 to retract Amboli and replace with Dattathreyapeeta and Torane.
+   - Added Update 10 to docs/feasibility_gate.md recording the retraction and transcription hazard.
+3. Transcription Hazard:
+   - Amboli point sample: +590.9 m (cooling).
+   - Bamnoli genuine polygon mean: -590.3 m (warming).
+   - Surviving '590' in docs/: 2 hits (feasibility_gate.md#Update-9 [quarantine note], feasibility_gate.md#Table-A [rainfall range 560-590 mm]).
+   - Surviving '591' in docs/: 0 hits.
+
+
+ITEM BG — Physical Explanation of the −4.4 m Mean
+--------------------------------------------------
+1. Area-Weighted vs Unweighted Mean:
+   - Unweighted polygon-count mean signed dz: -4.37 m (median: -6.28 m).
+   - Area-weighted mean signed dz: +1.51 m (analyzed across 137,094.8 km^2).
+2. Physical Interpretation:
+   - When weighted by physical surface area, the signed deviation integrates to +1.51 m (essentially zero).
+   - The negative unweighted mean (-4.37 m) reflects human settlement geography: villages are preferentially sited
+     in valley bottoms, river floodplains, and lower terraces rather than steep mountain ridges.
+   - This siting asymmetry explains why warming villages (559) outnumber cooling villages (425) at the 150 m threshold.
+   - The same asymmetry persists against ERA5 model orography (mean −1.1 m, median −6.2 m).
+
+
+ITEM BH — Flagship Single-Cell Exhibit (658.4 m Cell)
+-----------------------------------------------------
+1. Cell Characteristics:
+   - Location: 13.25°N, 75.50°E (Mudigere / Belthangady taluk, Western Ghats escarpment, KA).
+   - Coarse SRTM elevation: 658.2 m.
+   - ERA5 model orography: 812.1 m.
+   - Village count inside cell: 32 villages.
+   - Elevation minimum: 126.7 m (Indabettu).
+   - Elevation maximum: 1235.5 m (Halagadaka Estate).
+   - Elevation relief range: 1,108.8 m.
+   - Signed dz range: -531.7 m (dT = +3.46 °C) to +577.0 m (dT = -3.75 °C).
+2. Key Significance:
+   A single forecast model grid cell issues one uniform coarse temperature to 32 agricultural settlements
+   spanning over 1,100 vertical meters, requiring local downscaled corrections of opposite signs up to ±3.75 °C.
+
+
+ITEM BI — Mahabaleshwar Dropout Verification via Poona and Harnai
+-----------------------------------------------------------------
+1. Data Availability in 2016–2020 JJAS (610 total dates):
+   - Mahabaleshwar (IN012220400): 535 present, 75 missing dates.
+   - Poona (IN012190100): 472 valid days; overlaps on 48 / 75 Mahabaleshwar missing dates (64.0%).
+   - Harnai (IN012201300): 448 valid days; overlaps on 24 / 75 Mahabaleshwar missing dates (32.0%).
+2. Concordance Test Role:
+   - Harnai's overlap is thin (24 days), but Poona provides adequate coverage (48 days).
+   - This test evaluates synoptic wet/dry concordance on dropout dates versus recorded dates,
+     testing fill validity only (not precipitation magnitude).
+
+
+ITEM BJ — Statistical Ratification of Belgaum Regime Break
+----------------------------------------------------------
+1. Formal Hypotheses & Tests:
+   - Subsets: Pre-2004 (n=3: mean 0.557 ± 0.025) vs 2004-onward (n=11: mean 1.047 ± 0.265).
+   - Student's two-sample t-test (equal variance assumed, df=12):
+     t = -3.108, p = 0.0091 (p < 0.01).
+   - Welch's two-sample t-test (unequal variance, df=10.62):
+     t = -6.034, p = 0.00010 (p < 0.0002).
+2. Conclusion:
+   The regime break is statistically significant on ratio subsets alone at p < 0.01 under both tests,
+   without reliance on the D-flag mechanism. Recorded on disk under Update 10.
+
+
+ITEM BK — Audit of docs/feasibility_gate.md:NNN Citations
+----------------------------------------------------------
+1. Citation Audit:
+   - Total line citations to feasibility_gate.md found across docs/ and logs/: 3 citations (all in item_ag_ar.log).
+   - Line 97: matches text ('106/122 positions are >=80%').
+   - Line 307: shifted to line 351 due to Update 7–10 insertions.
+   - Line 527: shifted to line 571 due to Update 7–10 insertions.
+2. Recommendation:
+   Future documentation must reference permanent section anchors (e.g. #C.6, #C.7, #Update-10) rather than volatile line numbers.
+
+
+ITEM BL — Correction Log Continuity & Summary
+---------------------------------------------
+1. Continuity Check:
+   - Update 7 after-text is confirmed byte-identical to Update 8 before-text.
+   - Updates 1 through 9 are confirmed byte-preserved.
+2. Current Update Count: 10 Updates on disk:
+   - Update 1: Retention of raw gauge as primary benchmark; withdrawal of fitted lapse rates.
+   - Update 2: Fix 1.7x Mahabaleshwar ratio; withdrawal of unverified leeward estimates.
+   - Update 3: Quarantine Table B synthetic attenuation numbers.
+   - Update 4: Withdrawal of IMERG uncalibrated ratios; standardization of JJAS epoch.
+   - Update 5: Exact day-count baseline corrections (107.00, 101.75, 102.43, 103.25).
+   - Update 6: Formal withdrawal of 30yr/era counterfactual adjustment.
+   - Update 7: Removal of definitional-gap clause from C.6 deck sentence.
+   - Update 8: Substitution of defensible independent plateau range (64–86%, n=2); reinstatement of n=4 sample caveat.
+   - Update 9: Quarantine of the seven unsigned MAD village topographic figures.
+   - Update 10: Retraction of Amboli as flagship; statistical confirmation of Belgaum regime break.

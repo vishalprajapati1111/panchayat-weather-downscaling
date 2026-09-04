@@ -1,0 +1,210 @@
+ITEM B17 THROUGH B25 EXECUTION LOG
+==================================
+
+ITEM B17 — Diagnosis Restatement & Wording Retraction
+-----------------------------------------------------
+1. Nature of the Fault:
+   - Argmin nearest-node assignment on orthogonal coordinates [17.5 down to 13.0, 73.5 up to 76.5]
+     was CORRECT for all 16,943 villages both before and after the rebuild.
+   - The fault was strictly a VALUE-LOOKUP FAULT: srtm_grid in data/cache/orography_grids.npz was sampled
+     at integer quarter-degree coordinates, which correspond to pixel corners of GEE's corner-aligned raster,
+     storing arbitrary corner values rather than box areal means.
+2. Wording Retraction:
+   - The phrase '19.6 km diagonal misregistration in assignment' is formally RETRACTED everywhere on disk.
+   - docs/feasibility_gate.md:246 updated to state:
+     'Polygon assignment to ERA5 forecast nodes under the nearest-node rule ([L - 0.125°, L + 0.125°]) was
+      correct for all 16,943 villages both before and after the audit. The previous wording asserting a 19.6 km
+      diagonal misregistration in assignment is formally RETRACTED.'
+
+
+ITEM B18 — Canonical ERA5 Orography Provenance
+----------------------------------------------
+1. Source Used:
+   - ARCO ERA5 geopotential_at_surface / 9.80665 read directly from WeatherBench-2 Zarr:
+     gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr
+2. Indexing Code Line:
+   - compare_orography_grids.py:17–20:
+     arco_sub = ds[var_name].sel(latitude=lats, longitude=lons, method='nearest')
+     z_era5 = arco_sub.compute().values / 9.80665
+3. Coordinate Conventions:
+   - Latitude: descending from +90.0° to -90.0° at 0.25° spacing.
+   - Longitude: easting from 0.0° to 359.75° at 0.25° spacing.
+   - Lookup indexes coordinates directly on the Zarr dimension axes; no raster sampling was involved.
+4. GEE ECMWF/ERA5/DAILY Usage:
+   - Used strictly for CRS projection definition ([0.25, 0, -180, 0, -0.25, 90]) in run_at_au.py:70
+     and compare_orography_grids.py:26; never used as a source for z_era5 numerical values.
+
+
+ITEM B19 — Canonical Coarse Fields & Signed dz_SRTM Distribution
+-----------------------------------------------------------------
+1. Canonical Grid:
+   - Built on node-centred boxes [L - 0.125°, L + 0.125°] with transform [0.25, 0, -180.125, 0, -0.25, 90.125].
+2. Signed dz_SRTM Distribution (n=16,943):
+   - Min:  -614.5 m (Nagave, MH, mh2.geojson:10694, fine=73.4 m, coarse=687.8 m)
+   - p1:   -270.0 m
+   - p25:  -32.3 m
+   - p50:  -5.5 m
+   - Mean: -3.4 m
+   - p75:  +24.1 m
+   - p99:  +266.0 m
+   - Max:  +635.0 m (Muduba, KA, ka.geojson:21888, fine=765.3 m, coarse=130.3 m)
+   - Area-weighted mean: +3.35 m
+3. Superseded Extremes:
+   - Torane (fine=967.2 m, coarse=687.8 m) now has dz_SRTM = +279.4 m (superseded by Muduba at +635.0 m).
+   - Bamnoli (fine=587.7 m, coarse=662.7 m) now has dz_SRTM = -75.0 m (superseded by Nagave at -614.5 m).
+4. Populated Node Reconciliation:
+   - Exactly 210 populated nodes on the canonical grid, identically matching the 210 nodes previously evaluated.
+
+
+ITEM B20 — Rebuilt dz_ERA5 Figures & Re-Derived Bound
+-----------------------------------------------------
+1. Threshold Counts and Shares (n=16,943):
+   - dz > +150 m (cooling): 741 (4.37%)
+   - dz < -150 m (warming): 662 (3.91%)
+   - Total |dz| > 150 m:   1,403 (8.28%)
+   - dz > +100 m (cooling): 1,295 (7.64%)
+   - dz < -100 m (warming): 1,243 (7.34%)
+   - Total |dz| > 100 m:   2,538 (14.98%)
+2. Worst Villages:
+   - Cooling: Dattathreyapeeta (KA, ka.geojson:21692), fine 1547.9 m, ERA5 907.5 m, dz = +640.5 m, dT = -4.16 °C.
+   - Warming: Nagave (MH, mh2.geojson:10694), fine 73.4 m, ERA5 592.3 m, dz = -519.0 m, dT = +3.37 °C.
+3. Top 10 Positive (Cooling Adjustments):
+   1. Dattathreyapeeta       (KA, ka.geojson:21692): fine=1547.9 m, ERA5=907.5 m, dz=+640.5 m, dT=-4.16 °C
+   2. Nagenahalli            (KA, ka.geojson:21797): fine=1508.3 m, ERA5=907.5 m, dz=+600.8 m, dT=-3.91 °C
+   3. Inam Dattathreya Peeta (KA, ka.geojson:21788): fine=1499.4 m, ERA5=907.5 m, dz=+591.9 m, dT=-3.85 °C
+   4. Samse                  (KA, ka.geojson:22013): fine=1091.9 m, ERA5=528.6 m, dz=+563.3 m, dT=-3.66 °C
+   5. Isapur                 (MH, mh2.geojson:5323): fine= 831.0 m, ERA5=276.8 m, dz=+554.2 m, dT=-3.60 °C
+   6. Dhanagarwadi           (MH, mh2.geojson:7930): fine= 962.9 m, ERA5=409.3 m, dz=+553.6 m, dT=-3.60 °C
+   7. Kegad                  (MH, mh2.geojson:5320): fine= 812.8 m, ERA5=276.8 m, dz=+536.0 m, dT=-3.48 °C
+   8. Masnoli                (MH, mh2.geojson:7928): fine= 935.4 m, ERA5=409.3 m, dz=+526.1 m, dT=-3.42 °C
+   9. Nivale                 (MH, mh2.geojson:13026): fine= 933.8 m, ERA5=409.3 m, dz=+524.5 m, dT=-3.41 °C
+  10. Hornadu                (KA, ka.geojson:21986): fine=1051.9 m, ERA5=528.6 m, dz=+523.3 m, dT=-3.40 °C
+4. Top 10 Negative (Warming Adjustments):
+   1. Nagave                 (MH, mh2.geojson:10694): fine=  73.4 m, ERA5=592.3 m, dz=-519.0 m, dT=+3.37 °C
+   2. Akuskhan Nagar         (MH, mh2.geojson:10697): fine= 104.6 m, ERA5=592.3 m, dz=-487.7 m, dT=+3.17 °C
+   3. Thotathady             (KA, ka.geojson:20362): fine= 144.9 m, ERA5=608.7 m, dz=-463.8 m, dT=+3.01 °C
+   4. Otavane                (MH, mh2.geojson:9474): fine=  45.2 m, ERA5=484.2 m, dz=-439.0 m, dT=+2.85 °C
+   5. Chibidre               (KA, ka.geojson:20354): fine= 182.4 m, ERA5=608.7 m, dz=-426.3 m, dT=+2.77 °C
+   6. Satuli                 (MH, mh2.geojson:9471): fine=  62.5 m, ERA5=484.2 m, dz=-421.7 m, dT=+2.74 °C
+   7. Saralgi                (KA, ka.geojson:1207): fine=  37.1 m, ERA5=456.6 m, dz=-419.6 m, dT=+2.73 °C
+   8. Bavlat                 (MH, mh2.geojson:9473): fine=  69.8 m, ERA5=484.2 m, dz=-414.4 m, dT=+2.69 °C
+   9. Madkhol                (MH, mh2.geojson:9469): fine=  70.0 m, ERA5=484.2 m, dz=-414.1 m, dT=+2.69 °C
+  10. Ghadigaon              (MH, mh2.geojson:9450): fine= 169.3 m, ERA5=579.2 m, dz=-409.9 m, dT=+2.66 °C
+5. Re-Derived B13(c) Bound:
+   - Post-rebuild max |dz_SRTM| = 635.0 m.
+   - Post-rebuild max node offset across populated nodes = 346.47 m.
+   - Ceiling Bound = 635.0 + 346.47 = 981.47 m.
+   - Observed max |dz_ERA5| = 640.5 m <= 981.47 m: PASS.
+
+
+ITEM B21 — Rebuilt Node-Centred Flagship Exhibit
+------------------------------------------------
+1. Box Definition:
+   - Node: (13.25°N, 75.25°E) [i=17, j=7].
+   - Node-centred box bounds: lat [13.125, 13.375], lon [75.125, 75.375].
+   - Node coarse heights: ERA5 = 528.6 m, SRTM areal mean = 875.1 m.
+2. Village Composition & Turnover:
+   - Total villages in box: 33 villages.
+   - Differs from BH (32) and BS (30):
+     * BH was assembled by matching coarse height ~658.4 m (incorporating Chikhal Gothan in Sangli and Hanbal in Hassan).
+     * BS enforced corner-aligned coordinates [13.00, 13.25] x [75.25, 75.50].
+     * Node-centred box retains only 2 villages from BS (Samse and Kudremukh Notified Area); 28 villages leave and 31 new contiguous villages enter.
+3. Box Statistics:
+   - Min elevation: 290.1 m (Idu, ka.geojson:1601).
+   - Max elevation: 1,091.9 m (Samse, ka.geojson:22013).
+   - Relief span: 801.8 m.
+   - Cooling: 32 villages (up to -3.66 °C); Warming: 1 village (Idu, +1.55 °C).
+   - Coarse height identity: Every village receives identical ERA5 height (528.6 m) and SRTM height (875.1 m).
+4. Full Per-Village Table (33 villages):
+   See full table emitted in logs/item_b17_b25.log lines 125–165.
+
+
+ITEM B22 — Audit for Value-Matched Cell Selection
+-------------------------------------------------
+1. Scripts and Log Sections Matching Elevation Values:
+   - execute_bc_bl.py:52: cell_villages = [r for r in results if abs(r['elev_coarse'] - 658.4) < 0.2]
+     (emitted to logs/item_bc_bl.log:113–122 as ITEM BH, incorporating Chikhal Gothan 450 km north).
+   - inspect_grid_registration.py:30: v_658 = [r for r in results if abs(r['elev_coarse'] - 658.4) < 0.2]
+   - execute_bo_bu.py:147: v_658 = [r for r in results if abs(r['elev_coarse'] - 658.4) < 0.2]
+   - build_flagship_table.py:27: if abs(r['elev_coarse'] - 658.4) < 0.2:
+2. Known Casualties & Containment:
+   - Hanbal (Hassan) and Chikhal Gothan (Sangli) were the only casualties; no other cell in the repository
+     was ever selected by coarse elevation value.
+   - Both BH (32 villages) and BS (30 villages) are formally quarantined in Update 11.
+
+
+ITEM B23 — Raster Footprint Containment Assertion
+-------------------------------------------------
+1. Implementation in engine/checks/terrain_assertions.py:
+   - assert_raster_footprint_containment asserts that polygon centroid falls strictly inside
+     the spatial footprint of the raster pixel whose value was read: [node_lat - half_box, node_lat + half_box].
+2. Validation on Known-Bad vs Canonical Grid:
+   - On retired corner-registered grid: 12,759 / 16,943 villages FAIL (75.3% failure rate).
+   - On canonical rebuilt grid: 0 / 16,943 villages FAIL (100% PASS).
+3. srtm_grid Cleanup:
+   - Confirmed: engine/checks/terrain_assertions.py does NOT read srtm_grid.
+
+
+ITEM B24 — Arithmetic Reconciliations (Code Lengths & 10-Digit Bucket)
+----------------------------------------------------------------------
+1. Resolution of Sum (16,942 vs 16,943):
+   - The underlying array sum was exactly 16,943.
+   - The text summary in logs/item_b0_b16.log:98 wrote '>= 19 digits: 170' when the sum of buckets
+     (61+34+24+20+14+6+4+2+3+2+1) was 171. The 1-count off-by-one was an erratum in prose summarization.
+2. Distinct Codes vs Per-Polygon Tabulation:
+   - Tabulated over distinct Census codes (sum = 14,473):
+     * 10-digit distinct codes: 1,273
+     * 18-digit distinct codes: 4,050
+   - Tabulated over polygons (sum = 16,943):
+     * 10-digit polygons: 1,598
+     * 18-digit polygons: 4,188
+   - The earlier report mislabeled the polygon count (1,598) under the distinct-code header.
+
+
+ITEM B25 — Cell-Set Denominator Reconciliation
+----------------------------------------------
+| Denominator | Count | What It Counts | Reported Figures Using It |
+|---|---|---|---|
+| Domain Grid Nodes | 247 | Full orthogonal Cartesian product [13.0, 17.5]°N x [73.5, 76.5]°E (19 x 13) | Domain coverage definition |
+| Retired Comparison Set | 239 | 247 nodes minus 8 Arabian Sea corner pixels | AU distribution & Update 11 (retired) |
+| Land Nodes | 231 | 247 nodes minus 16 offshore nodes with zero SRTM land pixels | Canonical 231-cell offset distribution (B0 rebuild) |
+| Populated Nodes | 210 | Nodes whose [L ± 0.125°] box contains >= 1 village centroid | Downscaling lookups, B13(b) identity check, max offset (346.47 m) |
+
+Confirmation: Exactly 0 villages are assigned to a no-land node (all 16,943 villages map to one of the 210 populated land nodes).
+
+COMPLETE 33-VILLAGE TABLE FOR NODE (13.25N, 75.25E):
+No  Village Name                 Key              Fine_m   dz_E5_m    dT_E5_C    dz_SRTM_m   dT_SRTM_C   Inside
+---------------------------------------------------------------------------------------------------------
+1   Idu                          ka.geojson:1601  290.1    -238.5     +1.55      -584.9      +3.80       No    
+2   Sunkadamakki                 ka.geojson:21860 708.2    +179.6     -1.17      -166.8      +1.08       Yes   
+3   Nemmaru                      ka.geojson:21840 718.1    +189.5     -1.23      -157.0      +1.02       No    
+4   Kere                         ka.geojson:21876 738.3    +209.7     -1.36      -136.8      +0.89       No    
+5   Haruru (Harur)               ka.geojson:21859 743.3    +214.8     -1.40      -131.7      +0.86       No    
+6   Gulaganjimane                ka.geojson:21900 745.7    +217.1     -1.41      -129.4      +0.84       Yes   
+7   Kuthagodu                    ka.geojson:21844 759.8    +231.2     -1.50      -115.3      +0.75       No    
+8   Byredevaru                   ka.geojson:21895 767.4    +238.8     -1.55      -107.7      +0.70       Yes   
+9   Balekadi                     ka.geojson:21822 785.9    +257.3     -1.67      -89.2       +0.58       No    
+10  Mathuvalli Estate            ka.geojson:21925 792.1    +263.5     -1.71      -83.0       +0.54       Yes   
+11  Agalagandi                   ka.geojson:21831 794.1    +265.5     -1.73      -80.9       +0.53       No    
+12  Malanadu                     ka.geojson:21870 803.7    +275.1     -1.79      -71.3       +0.46       Yes   
+13  Karki Khan Estate            ka.geojson:21879 807.5    +278.9     -1.81      -67.6       +0.44       Yes   
+14  Nemmar Estate                ka.geojson:21886 821.4    +292.8     -1.90      -53.6       +0.35       Yes   
+15  Huligardi                    ka.geojson:21854 827.0    +298.4     -1.94      -48.1       +0.31       No    
+16  Guddethota                   ka.geojson:21868 836.8    +308.2     -2.00      -38.2       +0.25       No    
+17  Haralane                     ka.geojson:21916 846.2    +317.6     -2.06      -28.9       +0.19       Yes   
+18  Hadi                         ka.geojson:21913 864.6    +336.0     -2.18      -10.4       +0.07       Yes   
+19  Heggaru                      ka.geojson:21849 872.7    +344.1     -2.24      -2.3        +0.02       No    
+20  Vate Bachalakhan             ka.geojson:21862 889.5    +360.9     -2.35      +14.5       -0.09       No    
+21  Hadikiruru                   ka.geojson:21934 891.2    +362.6     -2.36      +16.1       -0.10       Yes   
+22  Sheerlu                      ka.geojson:21956 897.4    +368.8     -2.40      +22.3       -0.15       Yes   
+23  Kalasa                       ka.geojson:22237 933.6    +405.0     -2.63      +58.5       -0.38       No    
+24  Herthanakudige               ka.geojson:22247 938.9    +410.3     -2.67      +63.9       -0.42       Yes   
+25  Balagere                     ka.geojson:21920 955.4    +426.8     -2.77      +80.3       -0.52       Yes   
+26  Bethadakolalu                ka.geojson:21917 986.2    +457.6     -2.97      +111.1      -0.72       No    
+27  Kudremukh Notified Area Nac  ka.geojson:22063 990.2    +461.6     -3.00      +115.1      -0.75       Yes   
+28  Megur                        ka.geojson:21928 1023.1   +494.5     -3.21      +148.1      -0.96       Yes   
+29  Kallugudde                   ka.geojson:21935 1023.2   +494.6     -3.22      +148.1      -0.96       Yes   
+30  Kalakodu                     ka.geojson:21988 1026.7   +498.1     -3.24      +151.6      -0.99       Yes   
+31  Attikudige                   ka.geojson:21947 1049.4   +520.8     -3.39      +174.3      -1.13       No    
+32  Hornadu                      ka.geojson:21986 1051.9   +523.3     -3.40      +176.9      -1.15       Yes   
+33  Samse                        ka.geojson:22013 1091.9   +563.3     -3.66      +216.9      -1.41       No    
