@@ -1,0 +1,45 @@
+﻿# panchayat-weather-downscaling — .gitignore
+
+# ── Large data files excluded per P4 ────────────────────────────────────────
+data/
+*.tif
+*.zarr
+*.npy
+*.npz
+*.nc
+*.h5
+*.hdf5
+
+# ── Excluded outputs (too large or not for public release) ──────────────────
+outputs/daily_temperature_series.csv
+outputs/daily_station_validation_series.csv
+outputs/daily_village_temperature_series.csv
+outputs/figures/flagship_node_exhibit.svg
+
+# ── Credentials — NEVER commit these ────────────────────────────────────────
+.env
+*.env
+.netrc
+*.netrc
+*.pem
+*_key*
+*_secret*
+*credentials*.json
+*service_account*.json
+.cdsapirc
+
+# ── Python cache ─────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+*.egg-info/
+dist/
+build/
+
+# ── Editors & OS ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
