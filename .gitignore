@@ -43,3 +43,6 @@ build/
 .idea/
 *.DS_Store
 Thumbs.db
+
+# Demo outputs
+outputs/demo_flagship_downscaled.csv

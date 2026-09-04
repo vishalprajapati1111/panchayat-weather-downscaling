@@ -1,0 +1,64 @@
+# sih074 Downscaling Engine — Default Configuration
+# All paths are relative to the repo root unless they start with /
+
+domain:
+  lat_min: 13.0
+  lat_max: 18.25
+  lon_min: 73.5
+  lon_max: 76.5
+
+epochs:
+  chirps: {start: "1991-01-01", end: "2020-12-31"}
+  imerg:  {start: "2001-01-01", end: "2020-12-31"}
+  era5:   {start: "1991-01-01", end: "2020-12-31"}
+
+grids:
+  coarse_deg: 0.25   # ERA5 native
+  fine_deg:   0.05   # CHIRPS native; IMERG resampled to this
+
+cache:
+  root: "data/engine_cache"
+  chirps:  "data/engine_cache/chirps"
+  imerg:   "data/engine_cache/imerg"
+  era5:    "data/engine_cache/era5"
+  dem:     "data/engine_cache/dem"
+  weights: "data/engine_cache/weights"
+
+logs:
+  root: "logs"
+  fetch_log: "logs/fetch_log.jsonl"
+  assert_log: "logs/assertion_log.jsonl"
+
+feasibility:
+  # Known windward/leeward contrast pairs for feasibility gate
+  pairs:
+    maharashtra:
+      windward: {name: "Mahabaleshwar", lat: 17.92, lon: 73.66,
+                 gauge_jjas_mm: 5900, source: "IMD normals 1991-2020 approx"}
+      leeward:  {name: "Satara",        lat: 17.69, lon: 74.00,
+                 gauge_jjas_mm:  650, source: "IMD normals approx"}
+    karnataka:
+      windward: {name: "Kanakumbi", lat: 15.65, lon: 74.28,
+                 gauge_jjas_mm: null, source: "KSNDMC; no public climatology available"}
+      leeward:  {name: "Hosaritti", lat: 14.72, lon: 75.62,
+                 gauge_jjas_mm: null, source: "KSNDMC; no public climatology available"}
+  threshold_low:  2.0   # below this: satellite cannot resolve, STOP
+  threshold_warn: 4.0   # below this: works but understates; must report factor
+
+weights:
+  epsilon_log: 0.1      # mm/day added before log-transform (wet-day log mode)
+  epsilon_ratio: 0.5    # mm/day minimum parent-cell mean (ratio mode)
+  default_mode: "log"   # "log" or "ratio"
+  conservation: "exact" # "exact" (area-weighted to 1.0) or "drift" (allow small errors)
+  seasons:
+    JJAS: [6, 7, 8, 9]
+    ON:   [10, 11]
+    DJF:  [12, 1, 2]
+    MAM:  [3, 4, 5]
+
+physics:
+  lapse_rate_K_per_km: 6.5   # environmental lapse rate; configurable; fixed is an approximation
+  wind_exposure_alpha: 0.3   # log-law exponent for terrain speed-up
+
+reproducibility:
+  seed: 42
