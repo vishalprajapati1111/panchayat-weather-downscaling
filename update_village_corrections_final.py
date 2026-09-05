@@ -1,3 +1,14 @@
+import sys
+
+raise SystemExit(
+    "ERROR: update_village_corrections_final.py is SUPERSEDED and REFUSES TO EXECUTE.\n"
+    "This script generates the retired CSV checksum (MD5 42157952f3441d1ce6fb06910c032c6b)\n"
+    "using an outdated 2020 single-slice and midpoint diurnal mean.\n"
+    "Execution is permanently halted to protect authoritative output data.\n"
+    "To regenerate the authoritative CSV (MD5 52b119f0b4f2441592f2d3af866eef3f),\n"
+    "run: python rebuild_village_corrections.py"
+)
+
 import json, pathlib, math, hashlib
 import numpy as np
 import pandas as pd

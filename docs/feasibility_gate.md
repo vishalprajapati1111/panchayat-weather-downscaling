@@ -309,6 +309,13 @@
 >    - Dual-criterion audit confirms that across all 210 populated nodes, 0 nodes satisfy both $P_{90} \ge 617.3\text{ m}$ and offset within $\pm 10\text{ m}$ of median ($-2.86\text{ m}$); Node $(15.00^\circ\text{N}, 74.50^\circ\text{E})$ (range $536.9\text{ m}$, offset $-5.18\text{ m}$) is retained as the qualified interior companion node.
 >
 > Updates 1–13 confirmed byte-preserved.
+>
+> **UPDATE 15 — Village Corrections In-Window Rebuild & True Mean Supersession (2026-09-05, Item H6)**
+>
+> 1. **Rebuild of `outputs/village_corrections.csv`:**
+>    - The legacy exploratory 2020-04-30 columns in `outputs/village_corrections.csv` were formally replaced with genuine in-window values for 2018-04-30 (Pre-monsoon, DOY 120) and 2017-07-15 (Monsoon, DOY 196) derived directly from `data/cache/in_window_daily_extremes.npz`.
+>    - True 24-hour means (`prem_tmean`, `jjas_tmean`) read directly from the reanalysis NPZ replace the midpoint $(T_{\max} + T_{\min})/2$, shifting Pre-monsoon High ETo from $14,846$ ($87.62\%$) to $14,597$ ($86.15\%$, $\Delta = -249$) and Monsoon High ETo from $421$ ($2.48\%$) to $377$ ($2.23\%$, $\Delta = -44$). Heat stress counts remain invariant ($9,881$ / $58.32\%$ Pre-monsoon, $0$ / $0.00\%$ Monsoon).
+>    - Previous CSV checksum (`42157952f3441d1ce6fb06910c032c6b`, holding out-of-window 2020 columns) backed up to `data/backup/village_corrections_backup_20260905_1335.csv`. New authoritative checksum: **`52b119f0b4f2441592f2d3af866eef3f`** (43 columns, 16,943 rows, true 24-hr mean in-window, out-of-window RH retained under legacy names `rh_2020_04_30_pct` and `rh_2020_04_30_clamped_flag`; NOTE: the column name misstates the source date, which was actually 2020-07-15, and both columns are formally marked DEPRECATED - NOT FOR ADVISORY USE).
 
 > [!NOTE]
 > **RETRACTION — B15 Ten-Digit Code Prefix Truncation Conclusion (2026-09-03, Task B38)**

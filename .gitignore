@@ -1,7 +1,7 @@
-﻿# panchayat-weather-downscaling — .gitignore
+# panchayat-weather-downscaling — .gitignore
 
 # ── Large data files excluded per P4 ────────────────────────────────────────
-data/
+data/*
 *.tif
 *.zarr
 *.npy
@@ -9,6 +9,18 @@ data/
 *.nc
 *.h5
 *.hdf5
+
+# ── Whitelisted public caches and manifest ──────────────────────────────────
+!data/cache/
+data/cache/*
+!data/cache/provenance_manifest.json
+!data/cache/node_orography_grids.npz
+!data/cache/d2m_grid.npz
+!data/cache/in_window_daily_extremes.npz
+!data/cache/signed_village_results.json
+!data/cache/ghcn_daily/
+data/cache/ghcn_daily/*
+!data/cache/ghcn_daily/IN012131800_parsed.csv
 
 # ── Excluded outputs (too large or not for public release) ──────────────────
 outputs/daily_temperature_series.csv

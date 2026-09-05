@@ -95,3 +95,59 @@
 | Retired Flagship Exhibits | BH (32 villages) & BS (30 villages) | Assembled by matching coarse elevation ($\approx 658.4\text{ m}$); superseded by B21 canonical 33-village box | `docs/feasibility_gate.md:254` |
 | BT's Area-Weighted Mean $\Delta z_{\text{ERA5}}$ | $+5.56\text{ m}$ (and $+25.54\text{ m}$ subset) | Derived on corner grid; superseded by canonical node-centred evaluations | `docs/feasibility_gate.md:257` |
 | Belgaum Validation Citation | IN009021000 / IN009021100 | Sited 9 km from town with mixed instrument roles; Belgaum excluded from validation | `docs/feasibility_gate.md:18` |
+| Stale CSV Advisory Columns (2020 Snapshot) | 48.78% Heat Stress / 74.63% High ETo | Superseded in `outputs/village_corrections.csv` (old MD5: `42157952f3441d1ce6fb06910c032c6b`) by genuine in-window values (2018-04-30: 58.32% Heat Stress / 86.15% High ETo; 2017-07-15: 0.00% / 2.23%) using true 24-hr mean, with out-of-window RH explicitly marked 2020_04_30; new authoritative MD5: `52b119f0b4f2441592f2d3af866eef3f` | `docs/feasibility_gate.md:Update 15` |
+
+---
+
+## 6. Pre-Monsoon Heat Stress Advisory Rounding Inconsistency (Item J3)
+
+### Physical Root Cause: Full Precision vs 2-Decimal Display Storage
+In `outputs/village_corrections.csv`, the agro-meteorological advisory flag `real_prem_heat_stress` is evaluated during downscaling execution against full IEEE 754 floating-point temperature values:
+$$\text{heat\_p} = \begin{cases} 1 & \text{if } T_{\text{fine, max}} \ge 35.0^\circ\text{C} \\ 0 & \text{if } T_{\text{fine, max}} < 35.0^\circ\text{C} \end{cases}$$
+The resulting authoritative physical trigger count across the domain is **9,881 / 16,943 villages (58.32%)**.
+
+However, when temperature arrays are formatted and stored into the tabular CSV, values in `real_prem_tmax_c` are rounded to two decimal places:
+$$\text{real\_prem\_tmax\_c} = \text{round}(T_{\text{fine, max}}, 2)$$
+
+For exactly **11 villages**, unrounded fine temperatures lie in the half-open interval $[34.995, 35.000)^\circ\text{C}$. For these villages:
+1. Full-precision downscaled temperature is strictly $< 35.000^\circ\text{C}$, so `real_prem_heat_stress` is recorded as `0`.
+2. Stored display column `real_prem_tmax_c` rounds half-up to `35.00`.
+3. A post-hoc SQL or pandas filter re-evaluating `df['real_prem_tmax_c'] >= 35.0` evaluates `35.00 >= 35.0` as `True`, resulting in **9,892 triggers** ($9,881 + 11$).
+
+### Affected Village IDs & Properties
+The 11 villages affected by this precision threshold artifact are:
+1. `ka.geojson:3960` — **Bisalehalli** (Karnataka): $T_{\text{unrounded}} = 34.9958^\circ\text{C} \to$ stored `35.00`
+2. `ka.geojson:5386` — **Malligenahalli** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+3. `ka.geojson:5460` — **Hanumanthapura** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+4. `ka.geojson:5517` — **Echavadi** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+5. `ka.geojson:5601` — **Bhadravati Tmc** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+6. `ka.geojson:5640` — **Kodihalli Og** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+7. `ka.geojson:21484` — **Uppunse** (Karnataka): $T_{\text{unrounded}} = 34.9958^\circ\text{C} \to$ stored `35.00`
+8. `mh2.geojson:7646` — **Jambharmala** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+9. `mh2.geojson:8044` — **Namasgaon** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+10. `mh2.geojson:8196` — **Pandur** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+11. `mh2.geojson:9526` — **Ondosha** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+
+### Engineering Recommendation
+We recommend either storing temperatures at 3-decimal precision (e.g. `34.996`) or shipping an explicit unrounded floating-point column (`raw_prem_tmax_c`), so that downstream tabular threshold queries replicate the authoritative physical evaluation without rounding edge artifacts. Per standing audit policy, the column is preserved unchanged in the published dataset.
+
+
+### Monsoon Tmean Variable Integrity Audit (Item J5-1)
+- **Column**: `real_jjas_tmean_c`
+- **Integrity Status**: `VERIFIED_AUTHENTIC`
+- **Audit Findings**: Audited across all 16,943 villages against `data/cache/in_window_daily_extremes.npz`. Exactly 0 rows equal `real_jjas_tmin_c` and 16,943 rows reflect true 24-hour mean downscaled temperature ($T_{\text{mean}} = \text{ERA5 } T_{\text{mean}} + \Delta T_{\text{lapse}}$). A transcription typo in earlier audit prose displaying `t_f_min_j` was caught and corrected; on-disk scripts and published datasets are confirmed intact.
+
+---
+---
+
+## 7. Relative Humidity Column Deprecation & Audit (Item J6)
+
+- **Columns**: `rh_2020_04_30_pct` (Column 40), `rh_2020_04_30_clamped_flag` (Column 41)
+- **Status**: **DEPRECATED - NOT FOR ADVISORY USE**
+- **Reasons for Deprecation**:
+  1. **Source Date Mismatch**: Underlying 2m dewpoint grid (`data/cache/d2m_grid.npz`) was extracted for **2020-07-15** (monsoon), matching neither validation window date (**2018-04-30** pre-monsoon, **2017-07-15** monsoon).
+  2. **Mislabelled Column Name**: The column name `rh_2020_04_30_pct` and provenance manifest misstated the date as 2020-04-30. Retained solely for schema stability and MD5 verification.
+  3. **Superseded Temperature Vintage**: Saturation vapor pressure $e_s(T)$ was evaluated against the retired 2020 diurnal snapshot (MD5 `42157952f3441d1ce6fb06910c032c6b`), not against the authentic in-window temperatures.
+  4. **Psychrometric Clamping**: 483 rows (2.85%) were psychrometrically clamped at $100.0\%$.
+- **Downstream Isolation**: Exactly **0 assertions, figures, or published advisory metrics** consume either column.
+- **Production Fix Requirements**: Requires fetching in-window ERA5 `2m_dewpoint_temperature` grids for 2017-07-15 and 2018-04-30 via Copernicus CDS credentials and running co-temporal psychrometric downscaling.

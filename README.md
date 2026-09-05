@@ -41,7 +41,7 @@ Across 16,943 revenue villages spanning the Western Ghats domain in **Karnataka,
 | **Sub-Threshold / Minor Offsets** ($|\Delta z| < 150\text{ m}$) | 15,540 | 91.72% | `outputs/village_corrections.csv` |
 | **Extreme Cooling Case** (Highest scarp village) | **+640.5 m** ($\Delta T = -4.16\text{ }^\circ\text{C}$) | — | Dattathreyapeeta, Chikmagalur, KA |
 | **Extreme Warming Case** (Deepest canyon village) | **−519.0 m** ($\Delta T = +3.37\text{ }^\circ\text{C}$) | — | Nagave, Satara, MH |
-| **Authoritative Checksum (MD5)** | `42157952f3441d1ce6fb06910c032c6b` | — | `outputs/village_corrections.csv` |
+| **Authoritative Checksum (MD5)** | `52b119f0b4f2441592f2d3af866eef3f` *(supersedes `42157952f3441d1ce6fb06910c032c6b`; in-window rebuild)* | — | `outputs/village_corrections.csv` |
 
 ---
 
@@ -162,7 +162,7 @@ Sunkadamakki             708.2     528.6     179.6     -1.17     24.08     COOLI
 
 Produced output : outputs\demo_flagship_downscaled.csv
 Elapsed         : 0.047 s
-Checksum        : 42157952f3441d1ce6fb06910c032c6b (MATCH)
+Checksum        : 52b119f0b4f2441592f2d3af866eef3f (MATCH; supersedes 42157952...)
 
 Smoke test PASSED.
 ```
@@ -214,7 +214,7 @@ Smoke test PASSED.
 
 ### Step 1: Execute Full Rebuild (When data cache is populated)
 ```bash
-python update_village_corrections_final.py
+python rebuild_village_corrections.py
 ```
 This runs the full 16,943-village downscaling disaggregation, computing:
 - Village centroid extraction and ERA5 nearest-node assignment
@@ -240,17 +240,26 @@ Loaded canonical grids (19x13) and dataset (16943 villages from village_correcti
 Executing physical downscaling checks...
 
 Executing Permanent Quality & Physics Assertions:
-  [PASS] Assertion 1 (Footprint Containment): 16,943 / 16,943 villages inside node box (0 failures).
-  [PASS] Assertion 2 (Identical Coarse Height): Verified across all 210 populated nodes (std = 0.0 m).
-  [PASS] Assertion 3 (Arithmetic Ceiling Bound): Observed max |dz| (640.5 m) <= 981.47 m.
-  [PASS] Assertion 4 (Elevation Conservation): Area-weighted dz = +3.35 m (tolerance <= +-5.0 m).
-  [PASS] Assertion 5 (Unit Guard & Marked Site): Valid Celsius range [18.7, 29.0] °C.
+  [PASS] Assertion 1 (Footprint Containment): 16,943 / 16,943 villages inside node box (verified against independent grid).
+  [PASS] Assertion 2 (Identical Coarse Height): Verified across all 210 populated nodes against independent arrays (std = 0.0 m).
+  [PASS] Assertion 3 (Arithmetic Ceiling Bound): Observed max |dz| (640.5 m) <= 981.47 m (verified with independent grid).
+  [PASS] Assertion 4 (Elevation Conservation): Area-weighted dz = +3.35 m (tolerance <= +-5.0 m, verified with independent grid).
+  [PASS] Assertion 5 (Unit Guard & Marked Site): Valid Celsius ranges confirmed across seasons:
+    - Monsoon Tmax (real_jjas_tmax_c, 2017-07-15): [18.1, 34.6] °C (0 heat stress triggers >= 35°C)
+    - Pre-monsoon Tmax (real_prem_tmax_c, 2018-04-30): [26.9, 44.2] °C (9,881 heat stress triggers >= 35°C, 58.32%)
+  [PASS] Assertion 5b (Rounding Inconsistency Audit): Verified exactly 11 boundary villages in [34.995, 35.000) °C with display vs evaluation rounding mismatch (9,881 full-precision vs 9,892 post-rounding).
   [PASS] Assertion 6 (Zero-Delta Invariance): Injected dz=0.0m yields dt=0.00°C strictly unchanged.
-  [PASS] Assertion 7 (Schema & Primary Key): 43 columns, 16,943 unique keys (MD5: 42157952f3441d1ce6fb06910c032c6b).
+  [PASS] Assertion 7 (Schema & Primary Key): 43 columns, 16,943 unique keys (MD5: 52b119f0b4f2441592f2d3af866eef3f).
+  [SKIP - WARNING] Assertion 8 (Single-Sinusoid Residual Floor): No genuine project-generated daily temperature series on disk (synthetic series quarantined). Station observations (e.g. Kolhapur IN012131800) cannot substitute for model downscaling output.
+  [SKIP - WARNING] Assertion 9 (Inter-Annual Non-Identity): No genuine project-generated daily temperature series on disk (synthetic series quarantined). Station observations (e.g. Kolhapur IN012131800) cannot substitute for model downscaling output.
+  [PASS] Assertion 10 (Non-Analytical AST Lint): 0 synthetic temperature oscillators across tree (excluding quarantine/).
+  [PASS] Assertion 11 (Provenance Manifest): All 43 CSV header columns verified against manifest (0 quarantined references, table generating script and fetch scripts verified on disk).
 
 ===========================================================================
-ALL ASSERTIONS PASSED! Verification harness successful.
-Harness Runtime: 0.24 seconds.
+HARNESS SUMMARY: 10 passed, 2 skipped, 0 degraded (0 failed).
+  - 2 SKIPPED (Assertions 8-9): No genuine project-generated daily temperature series on disk (synthetic series quarantined).
+REPRODUCTION STATUS: 10 passed, 2 skipped, 0 degraded; physical and provenance assertions independently verified; daily-series assertions outstanding.
+Harness Runtime: 0.50 seconds. Exiting with status code 2.
 ===========================================================================
 ```
 
@@ -281,37 +290,64 @@ The primary deliverable `outputs/village_corrections.csv` contains 16,943 rows (
 | `polygon_area_km2` | `float` | $\text{km}^2$ | $> 0$ | Village polygon surface area. |
 | `multi_cell_flag` | `int` | Binary | 0 or 1 | 1 if village polygon straddles multiple ERA5 cells. |
 | `duplicate_code_flag` | `int` | Binary | 0 or 1 | 1 if duplicate census code detected across boundaries. |
-| `centroid_lat` | `float` | Deg North | $13.0 \le \phi \le 17.5$ | Latitude of village geographic centroid. |
-| `centroid_lon` | `float` | Deg East | $73.5 \le \lambda \le 76.5$ | Longitude of village geographic centroid. |
+| `centroid_lat` | `float` | Deg North | $12.98 \le \phi \le 17.53$ | Latitude of village geographic centroid. |
+| `centroid_lon` | `float` | Deg East | $73.47 \le \lambda \le 76.57$ | Longitude of village geographic centroid. |
 | `node_lat` | `float` | Deg North | $13.0, 13.25, \dots, 17.5$ | Latitude of assigned nearest ERA5 $0.25^\circ$ node. |
 | `node_lon` | `float` | Deg East | $73.5, 73.75, \dots, 76.5$ | Longitude of assigned nearest ERA5 $0.25^\circ$ node. |
 | `node_i` | `int` | Index | $0 \le i \le 18$ | Latitude row index in $19 \times 13$ node matrix. |
 | `node_j` | `int` | Index | $0 \le j \le 12$ | Longitude column index in $19 \times 13$ node matrix. |
-| `fine_elev_m` | `float` | Metres | $0.0 \le z \le 1,894.0$ | Village mean elevation from native SRTM 30m DEM. |
-| `era5_elev_m` | `float` | Metres | $0.0 \le z \le 875.1$ | Model surface orography height at assigned ERA5 node. |
-| `srtm_node_elev_m` | `float` | Metres | $0.0 \le z \le 892.4$ | SRTM 30m mean elevation over the $0.25^\circ$ grid cell. |
-| `dz_era5_m` | `float` | Metres | **Positive = Higher** | Elevation difference: $\Delta z = z_{\text{SRTM}} - z_{\text{ERA5}}$. |
-| `dt_era5_c` | `float` | $^\circ\text{C}$ | **Positive = Warmer** | Temperature correction: $\Delta T = -\Gamma \cdot \Delta z$ ($\Gamma = 0.0065$). |
+| `fine_elev_m` | `float` | Metres | $0.0 \le z \le 1,547.9$ | Village mean elevation from native SRTM 30m DEM. |
+| `era5_elev_m` | `float` | Metres | $7.0 \le z \le 1,040.1$ | Model surface orography height at assigned ERA5 node. |
+| `srtm_node_elev_m` | `float` | Metres | $0.1 \le z \le 1,059.5$ | SRTM 30m mean elevation over the $0.25^\circ$ grid cell. |
+| `dz_era5_m` | `float` | Metres | $[-519.0, 640.5]$ (Positive = Higher) | Elevation difference: $\Delta z = z_{\text{SRTM}} - z_{\text{ERA5}}$. |
+| `dt_era5_c` | `float` | $^\circ\text{C}$ | $[-4.16, 3.37]$ (Positive = Warmer) | Temperature correction: $\Delta T = -\Gamma \cdot \Delta z$ ($\Gamma = 0.0065$). |
 | `direction` | `str` | Category | `COOLING` / `WARMING` | Direction of adjustment (`COOLING` if $\Delta z > 0$). |
 | `materiality` | `str` | Category | `MATERIAL` / `SUB-THRESHOLD` | `MATERIAL` if $|\Delta z| \ge 150\text{ m}$ ($|\Delta T| \ge 0.975\text{ }^\circ\text{C}$). |
-| `dz_srtm_m` | `float` | Metres | Continuous | Sub-grid relief offset: $z_{\text{SRTM}} - z_{\text{SRTM,node}}$. |
-| `dt_srtm_c` | `float` | $^\circ\text{C}$ | Continuous | Sub-grid lapse correction against cell mean SRTM. |
-| `real_jjas_tmax_c` | `float` | $^\circ\text{C}$ | $[18.7, 36.2]$ | Downscaled mean daily $T_{\text{max}}$ in monsoon (JJAS). |
-| `real_jjas_tmin_c` | `float` | $^\circ\text{C}$ | $[14.2, 28.5]$ | Downscaled mean daily $T_{\text{min}}$ in monsoon (JJAS). |
-| `real_jjas_tmean_c` | `float` | $^\circ\text{C}$ | $[16.5, 31.8]$ | Downscaled mean daily $T_{\text{mean}}$ in monsoon (JJAS). |
-| `real_jjas_eto_mm_day`| `float` | $\text{mm/day}$| $[1.2, 5.8]$ | Hargreaves-Samani reference evapotranspiration (JJAS).|
+| `dz_srtm_m` | `float` | Metres | $[-614.5, 635.0]$ (Continuous) | Sub-grid relief offset: $z_{\text{SRTM}} - z_{\text{SRTM,node}}$. |
+| `dt_srtm_c` | `float` | $^\circ\text{C}$ | $[-4.13, 3.99]$ (Continuous) | Sub-grid lapse correction against cell mean SRTM. |
+| `real_jjas_tmax_c` | `float` | $^\circ\text{C}$ | $[18.14, 34.57]$ | Downscaled mean daily $T_{\text{max}}$ in monsoon (JJAS). |
+| `real_jjas_tmin_c` | `float` | $^\circ\text{C}$ | $[15.39, 26.23]$ | Downscaled mean daily $T_{\text{min}}$ in monsoon (JJAS). |
+| `real_jjas_tmean_c` | `float` | $^\circ\text{C}$ | $[16.47, 28.62]$ | Downscaled mean daily $T_{\text{mean}}$ in monsoon (JJAS). |
+| `real_jjas_eto_mm_day`| `float` | $\text{mm/day}$| $[1.71, 5.29]$ | Hargreaves-Samani reference evapotranspiration (JJAS).|
 | `real_jjas_heat_stress`| `int` | Binary | 0 or 1 | Flag for heat stress ($T_{\text{max}} \ge 35\text{ }^\circ\text{C}$) in JJAS. |
 | `real_jjas_irrig_demand`| `int` | Binary | 0 or 1 | Flag for high irrigation demand ($\text{ETo} \ge 5\text{ mm/day}$).|
-| `real_prem_tmax_c` | `float` | $^\circ\text{C}$ | $[24.8, 42.1]$ | Downscaled mean daily $T_{\text{max}}$ in pre-monsoon (MAM). |
-| `real_prem_tmin_c` | `float` | $^\circ\text{C}$ | $[16.5, 30.2]$ | Downscaled mean daily $T_{\text{min}}$ in pre-monsoon (MAM). |
-| `real_prem_tmean_c`| `float` | $^\circ\text{C}$ | $[21.0, 36.5]$ | Downscaled mean daily $T_{\text{mean}}$ in pre-monsoon (MAM). |
-| `real_prem_eto_mm_day`| `float` | $\text{mm/day}$| $[2.8, 7.6]$ | Reference evapotranspiration in pre-monsoon (MAM). |
+| `real_prem_tmax_c` | `float` | $^\circ\text{C}$ | $[26.94, 44.24]$ | Downscaled mean daily $T_{\text{max}}$ in pre-monsoon (MAM). |
+| `real_prem_tmin_c` | `float` | $^\circ\text{C}$ | $[17.87, 30.48]$ | Downscaled mean daily $T_{\text{min}}$ in pre-monsoon (MAM). |
+| `real_prem_tmean_c`| `float` | $^\circ\text{C}$ | $[22.69, 36.60]$ | Downscaled mean daily $T_{\text{mean}}$ in pre-monsoon (MAM). |
+| `real_prem_eto_mm_day`| `float` | $\text{mm/day}$| $[1.79, 7.83]$ | Reference evapotranspiration in pre-monsoon (MAM). |
 | `real_prem_heat_stress`| `int` | Binary | 0 or 1 | Flag for heat stress ($T_{\text{max}} \ge 35\text{ }^\circ\text{C}$) in MAM. |
 | `real_prem_irrig_demand`| `int` | Binary | 0 or 1 | Flag for high irrigation demand ($\text{ETo} \ge 5\text{ mm/day}$).|
-| `rh_downscaled_pct`| `float` | % | $0.0 \le \text{RH} \le 100.0$ | Downscaled relative humidity with dewpoint conserved. |
-| `rh_clamped_flag` | `int` | Binary | 0 or 1 | 1 if psychrometric RH reached physical $100\%$ cap. |
+| `rh_2020_04_30_pct` | `float` | % | $0.0 \le \text{RH} \le 100.0$ (observed $[76.5, 100.0]$) | **DEPRECATED - NOT FOR ADVISORY USE**. Downscaled RH (see notice below). |
+| `rh_2020_04_30_clamped_flag` | `int` | Binary | 0 or 1 | **DEPRECATED - NOT FOR ADVISORY USE**. Saturation clamp flag (see notice below). |
 | `wind_block_status`| `str` | Provenance | Text | Sourced from ARCO ERA5 10m eastward/northward wind. |
 | `wind_tpi_status` | `str` | Provenance | Text | Topographic Position Index exposure status. |
+
+> [!NOTE]
+> **Data Dictionary Range & Precision Convention (Item J5-1d / J5-1e)**:
+> All documented numerical intervals $[D_{\min}, D_{\max}]$ strictly contain 100% of village values in the published CSV ($D_{\min} \le \min(x)$ and $\max(x) \le D_{\max}$), with tightness bounded within at most one unit in the last decimal place ($A_{\min} - D_{\min} \le 10^{-k}$ and $D_{\max} - A_{\max} \le 10^{-k}$):
+> 1. **Temperatures and ETo**: Stored at 2-decimal precision; documented with exact empirical sample extremes $[A_{\min}, A_{\max}]$ to 2 decimal places.
+> 2. **Elevations**: Stored at 1-decimal precision from SRTM 30m; documented with exact empirical extremes to 1 decimal place.
+> 3. **Geographic Centroids**: Documented with outward-rounded 2-decimal bounds ($12.98 \le \phi \le 17.53$ and $73.47 \le \lambda \le 76.57$) to ensure tight containment of all 16,943 coordinates without trailing float artifacts.
+> 4. **Relative Humidity (Item J5-1f)**: Documented with both the physical definitional domain ($0.0 \le \text{RH} \le 100.0$) and the empirical sample range ($[76.50, 100.00]$).
+
+> [!WARNING]
+> **DEPRECATION NOTICE: Relative Humidity Columns (Item J6)**:
+> Columns `rh_2020_04_30_pct` and `rh_2020_04_30_clamped_flag` are formally marked **DEPRECATED - NOT FOR ADVISORY USE**. They must not be used for any agronomic, meteorological, or policy decisions.
+>
+> Four independent defects invalidate these columns:
+> 1. **Date Mismatch**: The underlying 2m dewpoint grid (`data/cache/d2m_grid.npz`) was extracted for **2020-07-15** (monsoon), matching neither validation window date (**2018-04-30** pre-monsoon, **2017-07-15** monsoon).
+> 2. **Mislabelled Column Name**: The column name `rh_2020_04_30_pct` misstates the source date as April 30, 2020. The name is retained strictly to maintain 43-column schema stability and MD5 verification.
+> 3. **Superseded Temperature Vintage**: The psychrometric saturation vapor pressure $e_s(T)$ was evaluated against the retired 2020 diurnal snapshot (MD5 `42157952f3441d1ce6fb06910c032c6b`), not against the authentic in-window temperatures.
+> 4. **Psychrometric Clamping & Unrounded Edge Cases (Item J5-1m)**: 483 rows (2.85%) were psychrometrically clamped at $100.0\%$ due to elevation cooling with constant unadjusted dewpoint (`rh_2020_04_30_clamped_flag == 1`). In total, 490 rows display `100.0%` in the published CSV. The discrepancy of 7 villages (`ka.geojson:4, 728, 1178, 1191, 5769, 21966` and `mh2.geojson:13002`) represents an unrounded display artifact: these villages had raw floating-point RH in $[99.95\%, 100.00\%)$, so they were not clamped (`clamped_flag == 0`), but rounded half-up to `100.0` when serialized to 1 decimal place.
+>
+> **Requirements for a Production Fix (Open Backlog Item)**:
+> Properly computing downscaled relative humidity requires:
+> - Hourly or daily ERA5 `2m_dewpoint_temperature` (`d2m`) grids covering the exact validation dates: **2017-07-15** (monsoon) and **2018-04-30** (pre-monsoon).
+> - Copernicus Climate Data Store (CDS) or Google Earth Engine API credentials to retrieve the in-window dewpoint fields.
+> - An updated ingestion script (`engine/deterministic/humidity.py`) to produce co-temporal `real_jjas_rh_pct` and `real_prem_rh_pct` against authoritative downscaled temperatures.
+>
+> **Isolation Status**: Audit confirms that **zero assertions, figure generation scripts, or published summary metrics** consume either RH column.
+
 
 ---
 
@@ -389,14 +425,54 @@ Belgaum's exclusion was audited and frozen in Item B35 (`logs/item_b35_b39.log`)
 
 ## 10. Licensing & Provenance
 
-This project maintains strict separation between source code and input data licensing:
+This project operates under a dual-licensing structure maintaining strict separation between software and data:
 
-- **Source Code**: All Python software, scripts, configuration files, and tests are open-source software licensed under the **MIT License** (see [LICENSE](LICENSE)).
-- **Data & Derived Attributes**: Upstream datasets are governed by their respective licenses detailed in [DATA_SOURCES.md](DATA_SOURCES.md):
-  - **Copernicus ERA5**: Copernicus Licence to Use Copernicus Products v1.2.
-  - **SRTM 30m**: USGS / NASA Public Domain.
-  - **DataMeet Village Boundaries**: Open Database Licence (ODbL v1.0). In adherence to ODbL share-alike constraints on adapted databases, no village polygon geometry is committed.
-  - **GHCN-Daily**: NOAA NCEI Public Domain.
+- **Source Code**: All Python software, scripts, configuration files, and tests are open-source software licensed under the **MIT License** (see [LICENSE](LICENSE)). The MIT licence covers the code only, not the derived village data.
+- **Derived Village Attributes & Centroids**: DataMeet Indian Village Boundary data is used under the **Open Database Licence (ODbL) v1.0**. Derived centroid columns (`centroid_lat`, `centroid_lon`) and associated village summary attributes in `outputs/village_corrections.csv` and `signed_village_results.json` are made available under **ODbL 1.0** with explicit attribution to DataMeet (https://projects.datameet.org/maps/subdistricts/). In strict adherence to share-alike compliance (ODbL §4.4) — and NOT under any educational or non-commercial exemption (ODbL provides neither) — all derived village tables are shared under ODbL 1.0. Raw polygon geometries (GeoJSON files) are withheld under repository size policy.
+- **Upstream Climate & Elevation Datasets**: Upstream datasets are governed by their respective public licenses detailed in [DATA_SOURCES.md](DATA_SOURCES.md):
+  - **Copernicus ERA5**: Copernicus Licence to Use Copernicus Products v1.2 (redistribution permitted with attribution).
+  - **SRTM 30m DEM**: USGS / NASA Public Domain (17 U.S.C. § 105).
+  - **GHCN-Daily**: NOAA NCEI Public Domain (17 U.S.C. § 105).
+
+---
+
+## 11. Pre-Monsoon Heat Stress Advisory Rounding Inconsistency (Item J3)
+
+### Physical Root Cause: Full Precision vs 2-Decimal Display Storage
+In `outputs/village_corrections.csv`, the agro-meteorological advisory flag `real_prem_heat_stress` is evaluated during downscaling execution against full IEEE 754 floating-point temperature values:
+$$\text{heat\_p} = \begin{cases} 1 & \text{if } T_{\text{fine, max}} \ge 35.0^\circ\text{C} \\ 0 & \text{if } T_{\text{fine, max}} < 35.0^\circ\text{C} \end{cases}$$
+The resulting authoritative physical trigger count across the domain is **9,881 / 16,943 villages (58.32%)**.
+
+However, when temperature arrays are formatted and stored into the tabular CSV, values in `real_prem_tmax_c` are rounded to two decimal places:
+$$\text{real\_prem\_tmax\_c} = \text{round}(T_{\text{fine, max}}, 2)$$
+
+For exactly **11 villages**, unrounded fine temperatures lie in the half-open interval $[34.995, 35.000)^\circ\text{C}$. For these villages:
+1. Full-precision downscaled temperature is strictly $< 35.000^\circ\text{C}$, so `real_prem_heat_stress` is recorded as `0`.
+2. Stored display column `real_prem_tmax_c` rounds half-up to `35.00`.
+3. A post-hoc SQL or pandas filter re-evaluating `df['real_prem_tmax_c'] >= 35.0` evaluates `35.00 >= 35.0` as `True`, resulting in **9,892 triggers** ($9,881 + 11$).
+
+### Affected Village IDs & Properties
+The 11 villages affected by this precision threshold artifact are:
+1. `ka.geojson:3960` — **Bisalehalli** (Karnataka): $T_{\text{unrounded}} = 34.9958^\circ\text{C} \to$ stored `35.00`
+2. `ka.geojson:5386` — **Malligenahalli** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+3. `ka.geojson:5460` — **Hanumanthapura** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+4. `ka.geojson:5517` — **Echavadi** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+5. `ka.geojson:5601` — **Bhadravati Tmc** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+6. `ka.geojson:5640` — **Kodihalli Og** (Karnataka): $T_{\text{unrounded}} = 34.9986^\circ\text{C} \to$ stored `35.00`
+7. `ka.geojson:21484` — **Uppunse** (Karnataka): $T_{\text{unrounded}} = 34.9958^\circ\text{C} \to$ stored `35.00`
+8. `mh2.geojson:7646` — **Jambharmala** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+9. `mh2.geojson:8044` — **Namasgaon** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+10. `mh2.geojson:8196` — **Pandur** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+11. `mh2.geojson:9526` — **Ondosha** (Maharashtra): $T_{\text{unrounded}} = 34.9972^\circ\text{C} \to$ stored `35.00`
+
+### Engineering Recommendation
+We recommend either storing temperatures at 3-decimal precision (e.g. `34.996`) or shipping an explicit unrounded floating-point column (`raw_prem_tmax_c`), so that downstream tabular threshold queries replicate the authoritative physical evaluation without rounding edge artifacts. Per standing audit policy, the column is preserved unchanged in the published dataset.
+
+
+## 12. Monsoon Tmean Variable Integrity Audit (Item J5-1)
+- **Column**: `real_jjas_tmean_c`
+- **Integrity Status**: `VERIFIED_AUTHENTIC`
+- **Audit Findings**: Audited across all 16,943 villages against `data/cache/in_window_daily_extremes.npz`. Exactly 0 rows equal `real_jjas_tmin_c` and 16,943 rows reflect true 24-hour mean downscaled temperature ($T_{\text{mean}} = \text{ERA5 } T_{\text{mean}} + \Delta T_{\text{lapse}}$). A transcription typo in earlier audit prose displaying `t_f_min_j` was caught and corrected; on-disk scripts and published datasets are confirmed intact.
 
 ---
 *For audit history and step-by-step verification records, see [AUDIT.md](AUDIT.md) and log files in `logs/`.*

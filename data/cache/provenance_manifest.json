@@ -1,0 +1,321 @@
+{
+  "manifest_version": "1.1.0",
+  "generated_at": "2026-09-05T02:25:00Z",
+  "dataset": "outputs/village_corrections.csv",
+  "columns": {
+    "fine_elev_m": {
+      "source_asset": "USGS/SRTMGL1_003 (NASA SRTM 30m Global 1-arc-second V003)",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static 2000-02 Shuttle Radar Topography Mission",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "era5_elev_m": {
+      "source_asset": "ECMWF ERA5 Geopotential at Surface (z / 9.80665)",
+      "fetch_script": "rebuild_node_grid.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static ERA5 Invariant Surface Geopotential",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "srtm_node_elev_m": {
+      "source_asset": "USGS/SRTMGL1_003 aggregated to ERA5 0.25 deg node footprint",
+      "fetch_script": "rebuild_node_grid.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static 2000-02 Shuttle Radar Topography Mission",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "dz_era5_m": {
+      "source_asset": "Derived: fine_elev_m - era5_elev_m",
+      "fetch_script": "engine/deterministic/temperature.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Elevation Offset",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "dt_era5_c": {
+      "source_asset": "Derived: -dz_era5_m * 0.0065 C/m lapse rate",
+      "fetch_script": "engine/deterministic/temperature.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Lapse-Rate Temperature Delta",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "direction": {
+      "source_asset": "Derived: categorical cooling vs warming sign from dt_era5_c",
+      "fetch_script": "engine/deterministic/temperature.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Categorical Flag",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "materiality": {
+      "source_asset": "Derived: categorical flag (|dt_era5_c| > 0.5 C)",
+      "fetch_script": "engine/deterministic/temperature.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Categorical Flag",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "dz_srtm_m": {
+      "source_asset": "Derived: fine_elev_m - srtm_node_elev_m",
+      "fetch_script": "engine/deterministic/temperature.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Elevation Offset",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "dt_srtm_c": {
+      "source_asset": "Derived: -dz_srtm_m * 0.0065 C/m lapse rate",
+      "fetch_script": "engine/deterministic/temperature.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Lapse-Rate Temperature Delta",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "real_jjas_tmax_c": {
+      "source_asset": "WeatherBench-2 / ECMWF ERA5 Hourly 0.25 deg (gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr)",
+      "fetch_script": "compute_in_window_b42_b43_b44.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2017-07-15 00:00 to 2017-07-15 23:00 UTC (DOY 196)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_jjas_tmin_c": {
+      "source_asset": "WeatherBench-2 / ECMWF ERA5 Hourly 0.25 deg (gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr)",
+      "fetch_script": "compute_in_window_b42_b43_b44.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2017-07-15 00:00 to 2017-07-15 23:00 UTC (DOY 196)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_jjas_tmean_c": {
+      "source_asset": "WeatherBench-2 / ECMWF ERA5 Hourly 0.25 deg (gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr)",
+      "fetch_script": "compute_in_window_b42_b43_b44.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2017-07-15 00:00 to 2017-07-15 23:00 UTC (DOY 196)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_jjas_eto_mm_day": {
+      "source_asset": "FAO-56 Hargreaves-Samani (1985) driven by real ERA5 extremes and Keplerian solar extraterrestrial radiation Ra",
+      "fetch_script": "engine/deterministic/agronomic.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2017-07-15 (DOY 196)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_jjas_heat_stress": {
+      "source_asset": "Binary Advisory Flag (real_jjas_tmax_c >= 35.0 C)",
+      "fetch_script": "engine/deterministic/agronomic.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2017-07-15 (DOY 196)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_jjas_irrig_demand": {
+      "source_asset": "Binary Advisory Flag (real_jjas_eto_mm_day > 5.0 mm/day)",
+      "fetch_script": "engine/deterministic/agronomic.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2017-07-15 (DOY 196)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_prem_tmax_c": {
+      "source_asset": "WeatherBench-2 / ECMWF ERA5 Hourly 0.25 deg (gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr)",
+      "fetch_script": "compute_in_window_b42_b43_b44.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2018-04-30 00:00 to 2018-04-30 23:00 UTC (DOY 120)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_prem_tmin_c": {
+      "source_asset": "WeatherBench-2 / ECMWF ERA5 Hourly 0.25 deg (gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr)",
+      "fetch_script": "compute_in_window_b42_b43_b44.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2018-04-30 00:00 to 2018-04-30 23:00 UTC (DOY 120)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_prem_tmean_c": {
+      "source_asset": "WeatherBench-2 / ECMWF ERA5 Hourly 0.25 deg (gs://weatherbench2/datasets/era5/1959-2023_01_10-full_37-1h-0p25deg-chunk-1.zarr)",
+      "fetch_script": "compute_in_window_b42_b43_b44.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2018-04-30 00:00 to 2018-04-30 23:00 UTC (DOY 120)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_prem_eto_mm_day": {
+      "source_asset": "FAO-56 Hargreaves-Samani (1985) driven by real ERA5 extremes and Keplerian solar extraterrestrial radiation Ra",
+      "fetch_script": "engine/deterministic/agronomic.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2018-04-30 (DOY 120)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_prem_heat_stress": {
+      "source_asset": "Binary Advisory Flag (real_prem_tmax_c >= 35.0 C)",
+      "fetch_script": "engine/deterministic/agronomic.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2018-04-30 (DOY 120)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "real_prem_irrig_demand": {
+      "source_asset": "Binary Advisory Flag (real_prem_eto_mm_day > 5.0 mm/day)",
+      "fetch_script": "engine/deterministic/agronomic.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2018-04-30 (DOY 120)",
+      "verification_status": "VERIFIED_REAL",
+      "generating_script": "rebuild_village_corrections.py"
+    },
+    "wind_block_status": {
+      "source_asset": "ARCO ERA5 10m Wind Speed (u10, v10) block-scale spatial interpolation",
+      "fetch_script": "engine/deterministic/wind.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Climatological Mean Field",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "wind_tpi_status": {
+      "source_asset": "Topographic Position Index (TPI) exposure classification from SRTM 30m DEM",
+      "fetch_script": "engine/deterministic/wind.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static 2000-02 Shuttle Radar Topography Mission",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "rh_2020_04_30_pct": {
+      "source_asset": "August-Roche-Magnus psychrometric derivation from ECMWF/ERA5/HOURLY d2m and t2m",
+      "fetch_script": "engine/deterministic/humidity.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2020-07-15 00:00 to 2020-07-15 23:00 UTC",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "rh_2020_04_30_clamped_flag": {
+      "source_asset": "August-Roche-Magnus physical saturation guard (es <= e <= 100%)",
+      "fetch_script": "engine/deterministic/humidity.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "2020-07-15 00:00 to 2020-07-15 23:00 UTC",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "village_id": {
+      "source_asset": "DataMeet India Maps village feature index with state prefix",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Administrative Boundaries",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "src_file": {
+      "source_asset": "DataMeet GeoJSON partition filename (ga.geojson, ka.geojson, mh1.geojson, mh2.geojson)",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Administrative Boundaries",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "feature_idx": {
+      "source_asset": "0-indexed feature position in source DataMeet GeoJSON",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Administrative Boundaries",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "village_name": {
+      "source_asset": "DataMeet polygon attribute NAME / VILL_NAME",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Village Registry",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "state": {
+      "source_asset": "Administrative state postal code (GA, KA, MH)",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Administrative Hierarchy",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "district": {
+      "source_asset": "DataMeet polygon attribute DISTRICT",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Administrative Hierarchy",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "taluka": {
+      "source_asset": "DataMeet polygon attribute SUB_DIST / TALUKA",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Administrative Hierarchy",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "census_code": {
+      "source_asset": "Census village identifier (18-digit code for MH/GA, marked unavailable for KA)",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Census 2001/2011 Official Code Registry",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "state_loc_code": {
+      "source_asset": "State revenue department survey parcel code (e.g. Karnataka LOC_CODE)",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "State Land Records / Cadastral Survey Registry",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "polygon_area_km2": {
+      "source_asset": "Geodesic/planar surface area computed from DataMeet polygon geometry",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Geodesic Geometry Calculation",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "multi_cell_flag": {
+      "source_asset": "Topological overlap flag indicating polygon spans >1 ERA5 0.25 deg node cell",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Boundary Intersection Flag",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "duplicate_code_flag": {
+      "source_asset": "Flag marking non-unique census identifiers across sub-districts",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Integrity Flag",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "centroid_lat": {
+      "source_asset": "Centroid latitude derived from DataMeet boundary polygon coordinates",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.003, 17.499], Lon [73.5, 76.5]",
+      "temporal_bounds": "Static Centroid Geometric Calculation",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "centroid_lon": {
+      "source_asset": "Centroid longitude derived from DataMeet boundary polygon coordinates",
+      "fetch_script": "run_at_au.py",
+      "spatial_bounds": "Lat [13.0, 17.5], Lon [73.504, 76.498]",
+      "temporal_bounds": "Static Centroid Geometric Calculation",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "node_lat": {
+      "source_asset": "Latitude of nearest canonical ERA5 0.25 deg grid node",
+      "fetch_script": "rebuild_node_grid.py",
+      "spatial_bounds": "Lat [13.0, 17.5], step 0.25",
+      "temporal_bounds": "Static Canonical Grid Definition",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "node_lon": {
+      "source_asset": "Longitude of nearest canonical ERA5 0.25 deg grid node",
+      "fetch_script": "rebuild_node_grid.py",
+      "spatial_bounds": "Lon [73.5, 76.5], step 0.25",
+      "temporal_bounds": "Static Canonical Grid Definition",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "node_i": {
+      "source_asset": "Latitude grid array index [0..18] corresponding to node_lat",
+      "fetch_script": "rebuild_node_grid.py",
+      "spatial_bounds": "Integer index range [0, 18]",
+      "temporal_bounds": "Static Grid Index",
+      "verification_status": "VERIFIED_REAL"
+    },
+    "node_j": {
+      "source_asset": "Longitude grid array index [0..12] corresponding to node_lon",
+      "fetch_script": "rebuild_node_grid.py",
+      "spatial_bounds": "Integer index range [0, 12]",
+      "temporal_bounds": "Static Grid Index",
+      "verification_status": "VERIFIED_REAL"
+    }
+  },
+  "generating_script": "rebuild_village_corrections.py"
+}
