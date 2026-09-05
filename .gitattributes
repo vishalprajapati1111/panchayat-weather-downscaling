@@ -1,0 +1,12 @@
+# Auto-detect text files and perform line-ending normalization
+* text=auto
+
+# outputs/village_corrections.csv must never be line-ending converted
+# because its published MD5 (52b119f0b4f2441592f2d3af866eef3f) is a verification artifact.
+outputs/village_corrections.csv -text
+
+# Binary cache arrays
+*.npz binary
+
+# All CSV files preserved verbatim without line-ending normalization
+*.csv -text
