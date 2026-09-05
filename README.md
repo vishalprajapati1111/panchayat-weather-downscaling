@@ -434,6 +434,9 @@ This project operates under a dual-licensing structure maintaining strict separa
   - **SRTM 30m DEM**: USGS / NASA Public Domain (17 U.S.C. § 105).
   - **GHCN-Daily**: NOAA NCEI Public Domain (17 U.S.C. § 105).
 
+### Published Checksums & Line-Ending Portability Policy
+Only outputs/village_corrections.csv and the data artifacts under data/cache/ carry byte-stable published checksums (enforced explicitly via .gitattributes). Markdown (.md), Python (.py), and JSON (.json) files are line-ending normalized on checkout under git's 	ext=auto policy, so their MD5 checksums are platform-dependent and are not verification artifacts.
+
 ---
 
 ## 11. Pre-Monsoon Heat Stress Advisory Rounding Inconsistency (Item J3)
