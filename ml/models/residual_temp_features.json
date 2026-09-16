@@ -1,0 +1,53 @@
+{
+  "feature_names": [
+    "temperature_C",
+    "dewpoint_C",
+    "wind_speed_ms",
+    "surface_pressure_Pa",
+    "precipitation_m",
+    "solar_radiation_J_m2",
+    "hour_sin",
+    "hour_cos",
+    "doy_sin",
+    "doy_cos"
+  ],
+  "target": "residual_C",
+  "physics_formula": "temperature_C - 0.0065 * (srtm_elevation_m - era5_elevation_m)",
+  "hyperparameters": {
+    "n_estimators": 300,
+    "max_depth": 3,
+    "learning_rate": 0.05,
+    "subsample": 0.8,
+    "colsample_bytree": 0.8,
+    "objective": "reg:squarederror",
+    "random_state": 42
+  },
+  "training_stations": [
+    {
+      "name": "Aurangpur",
+      "lat": 20.821111,
+      "lon": 77.540833,
+      "year": 2023,
+      "records": 8560
+    },
+    {
+      "name": "Bhatsanagar_1",
+      "lat": 19.519534,
+      "lon": 73.409324,
+      "year": 2024,
+      "records": 8380
+    },
+    {
+      "name": "Natuwadi Dam_1",
+      "lat": 17.332778,
+      "lon": 73.4,
+      "year": 2024,
+      "records": 8321
+    }
+  ],
+  "training_date_range": {
+    "start": "2023-01-01 00:00:00+00:00",
+    "end": "2024-12-31 23:00:00+00:00"
+  },
+  "total_training_records": 25261
+}

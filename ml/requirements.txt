@@ -1,0 +1,9 @@
+xarray
+zarr
+gcsfs
+numpy
+pandas
+matplotlib
+geopandas
+rioxarray
+rasterio
