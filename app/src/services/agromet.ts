@@ -1,3 +1,32 @@
+export interface DailyResponse {
+  village_id: string;
+  name: string;
+  state: string;
+  lat: number;
+  lon: number;
+  elevation_m: number;
+  forecast_date: string;
+  cell_precip_sum_mm: number;
+  rain_ratio: number;
+  wind_dir_deg: number;
+  wind_speed_max_kmh: number;
+  gate_g: number;
+  effective_ratio: number;
+  rain_mm: number;
+  cell_tmax_c: number;
+  cell_tmin_c: number;
+  temp_offset_c: number;
+  tmax_c: number;
+  tmin_c: number;
+  tmean_c: number;
+  eto_mm_day: number;
+  inside_validated_band: boolean;
+  distance_km: number;
+  in_domain: boolean;
+  driver_model: string;
+  driver_source: string;
+}
+
 export interface PredictResponse {
   village_id: string;
   name: string;
@@ -55,6 +84,17 @@ export async function predict(lat: number, lon: number): Promise<PredictResponse
     return await res.json();
   } catch (e) {
     console.error('AgroMet predict error:', e);
+    return null;
+  }
+}
+
+export async function daily(lat: number, lon: number): Promise<DailyResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/daily?lat=${lat}&lon=${lon}`);
+    if (!res.ok) return null;
+    return await res.json();
+  } catch (e) {
+    console.error('AgroMet daily error:', e);
     return null;
   }
 }

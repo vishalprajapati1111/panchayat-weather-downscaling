@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { predict, modelInfo as fetchModelInfo, PredictResponse, ModelInfoResponse } from '../services/agromet';
+import { predict, daily, modelInfo as fetchModelInfo, PredictResponse, DailyResponse, ModelInfoResponse } from '../services/agromet';
 
 interface AgrometContextValue {
   prediction: PredictResponse | null;
+  dailyForecast: DailyResponse | null;
   modelInfo: ModelInfoResponse | null;
   loading: boolean;
   error: string | null;
@@ -21,6 +22,7 @@ const AgrometContext = createContext<AgrometContextValue | undefined>(undefined)
 
 export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [prediction, setPrediction] = useState<PredictResponse | null>(null);
+  const [dailyForecast, setDailyForecast] = useState<DailyResponse | null>(null);
   const [modelInfoData, setModelInfoData] = useState<ModelInfoResponse | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,7 +38,10 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setLoading(true);
     setError(null);
     setCurrentCoords({ lat, lon });
-    const pred = await predict(lat, lon);
+    const [pred, dailyData] = await Promise.all([
+      predict(lat, lon),
+      daily(lat, lon)
+    ]);
     if (pred) {
       setPrediction(pred);
       // Clear domain banner on any successful in-domain location
@@ -49,6 +54,9 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     } else {
       setError('Failed to load prediction from AgroMet API');
+    }
+    if (dailyData) {
+      setDailyForecast(dailyData);
     }
     setLoading(false);
   }, []);
@@ -144,6 +152,7 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
     <AgrometContext.Provider
       value={{
         prediction,
+        dailyForecast,
         modelInfo: modelInfoData,
         loading,
         error,

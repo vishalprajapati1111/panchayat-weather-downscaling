@@ -34,7 +34,7 @@ export default function App() {
 }
 
 function ParamAppShell() {
-  const { prediction, loading, currentCoords, setLocation, domainFallbackNote, requestLocation, gpsStatus } = useAgromet();
+  const { prediction, dailyForecast, loading, currentCoords, setLocation, domainFallbackNote, requestLocation, gpsStatus } = useAgromet();
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [sheetOpen, setSheetOpen] = useState<boolean>(false);
   const [windowWidth, setWindowWidth] = useState<number>(() =>
@@ -179,6 +179,7 @@ function ParamAppShell() {
           />
           <MapGlassPanel
             prediction={prediction}
+            dailyForecast={dailyForecast}
             loading={loading}
             domainFallbackNote={domainFallbackNote}
             isMobile={isMobile}
@@ -219,29 +220,34 @@ function ParamAppShell() {
         {/* PEEK STATE (sheetOpen = false): height 140px */}
         {!sheetOpen && (
           <div
-            className="w-full h-full flex flex-col justify-between p-4 cursor-pointer select-none"
+            className="w-full h-full flex flex-col justify-between p-3.5 cursor-pointer select-none"
             onClick={() => setSheetOpen(true)}
             onTouchStart={handleTouchStart}
             onTouchEnd={handleTouchEnd}
           >
             {/* 40px drag handle / grab bar */}
-            <div className="w-full flex justify-center pt-1 pb-2">
+            <div className="w-full flex justify-center pt-0.5 pb-1.5">
               <div className="w-10 h-1.5 bg-neutral-400/70 rounded-full" />
             </div>
 
-            {/* Current village name + taluka line and current temp */}
-            <div className="flex items-center justify-between pb-2 px-1">
-              <div className="min-w-0 flex-1 pr-3">
+            {/* Current village name + live daily driver + seasonal normal */}
+            <div className="flex items-center justify-between pb-1 px-1">
+              <div className="min-w-0 flex-1 pr-2">
                 <div className="flex items-center gap-1.5">
-                  <span className="material-symbols-outlined text-[20px] text-primary">location_on</span>
-                  <h3 className="text-base font-bold text-neutral-900 truncate">
-                    {prediction ? prediction.name : 'Kolhapur (M Corp.)'}
+                  <span className="material-symbols-outlined text-[18px] text-primary">location_on</span>
+                  <h3 className="text-sm font-bold text-neutral-900 truncate">
+                    {dailyForecast?.name || prediction?.name || 'Kolhapur (M Corp.)'}
                   </h3>
                 </div>
-                <p className="text-xs text-neutral-600 truncate pl-6">
-                  {prediction
-                    ? `${prediction.state} • Elev: ${prediction.elevation_m.toFixed(0)}m • ${prediction.inside_validated_band ? 'Validated' : 'Extrapolated'}`
-                    : 'Kolhapur, Maharashtra'}
+                {/* Live Driver Line */}
+                <p className="text-[10px] text-emerald-800 font-semibold pl-6 truncate mt-0.5">
+                  ECMWF IFS 0.25° · forecast for {dailyForecast?.forecast_date || 'tomorrow'}
+                </p>
+                <p className="text-xs text-neutral-800 font-bold pl-6 truncate">
+                  Rain: {dailyForecast ? `${dailyForecast.rain_mm.toFixed(1)} mm` : '–'} • {dailyForecast ? `${dailyForecast.tmax_c.toFixed(1)}° / ${dailyForecast.tmin_c.toFixed(1)}°C` : '–'} • ETo: {dailyForecast ? `${dailyForecast.eto_mm_day.toFixed(1)} mm/d` : '–'}
+                </p>
+                <p className="text-[10px] text-neutral-500 font-medium pl-6 truncate mt-0.5">
+                  seasonal normal (JJAS): {prediction ? `${prediction.temp_c.toFixed(1)}°C • ${Math.round(prediction.rainfall_jjas_mm)} mm` : '–'}
                 </p>
                 {domainFallbackNote && prediction?.in_domain === false && (
                   <p className="text-[10px] text-amber-700 font-medium pl-6 truncate mt-0.5">
@@ -251,11 +257,11 @@ function ParamAppShell() {
               </div>
 
               <div className="text-right shrink-0">
-                <span className="text-2xl font-black text-neutral-900">
-                  {prediction ? `${prediction.temp_c.toFixed(1)}°C` : '24.4°C'}
+                <span className="text-xl md:text-2xl font-black text-neutral-900 leading-none">
+                  {dailyForecast ? `${dailyForecast.rain_mm.toFixed(1)} mm` : (prediction ? `${prediction.temp_c.toFixed(1)}°C` : '24.4°C')}
                 </span>
-                <span className="block text-[10px] text-neutral-500 font-medium">
-                  seasonal mean (JJAS)
+                <span className="block text-[9px] text-emerald-700 font-bold uppercase tracking-wider mt-0.5">
+                  {dailyForecast ? 'tomorrow rain' : 'seasonal mean'}
                 </span>
               </div>
             </div>
