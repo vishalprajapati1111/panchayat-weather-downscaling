@@ -37,6 +37,21 @@ df["name_lower"] = df["name"].str.lower()
 df["state"] = df["state"].astype(str)
 df["inside_validated_band"] = df["inside_validated_band"].astype(bool)
 
+DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily.csv"
+if not DAILY_DATA_PATH.exists():
+    DAILY_DATA_PATH = Path("outputs/village_daily_20260917.csv")
+if not DAILY_DATA_PATH.exists():
+    DAILY_DATA_PATH = BASE_DIR.parent / "outputs" / "village_daily_20260917.csv"
+
+if DAILY_DATA_PATH.exists():
+    df_daily = pd.read_csv(DAILY_DATA_PATH)
+    df_daily["village_id"] = df_daily["village_id"].astype(str)
+    df_daily["name"] = df_daily["name"].astype(str)
+    df_daily["state"] = df_daily["state"].astype(str)
+    df_daily["inside_validated_band"] = df_daily["inside_validated_band"].astype(bool)
+else:
+    df_daily = None
+
 VILLAGE_LATS = df["lat"].to_numpy(dtype=np.float64)
 VILLAGE_LONS = df["lon"].to_numpy(dtype=np.float64)
 VILLAGE_LATS_RAD = np.radians(VILLAGE_LATS)
@@ -143,6 +158,54 @@ def predict(
         "distance_km": distance_km,
         "in_domain": in_domain,
         "note": note
+    }
+
+
+@app.get("/api/daily")
+def daily(
+    lat: float = Query(..., description="Latitude of query location"),
+    lon: float = Query(..., description="Longitude of query location")
+):
+    if df_daily is None:
+        return {"error": "Daily forecast table not loaded"}
+
+    distances = haversine_vectorized(lat, lon)
+    min_idx = int(np.argmin(distances))
+    distance_km = round(float(distances[min_idx]), 2)
+
+    row = df_daily.iloc[min_idx]
+    in_domain = bool(
+        DOMAIN_LAT_MIN <= lat <= DOMAIN_LAT_MAX and
+        DOMAIN_LON_MIN <= lon <= DOMAIN_LON_MAX
+    )
+
+    return {
+        "village_id": str(row["village_id"]),
+        "name": str(row["name"]),
+        "state": str(row["state"]),
+        "lat": round(float(row["lat"]), 5),
+        "lon": round(float(row["lon"]), 5),
+        "elevation_m": round(float(row["elevation_m"]), 1),
+        "forecast_date": str(row["forecast_date"]),
+        "cell_precip_sum_mm": round(float(row["cell_precip_sum_mm"]), 2),
+        "rain_ratio": round(float(row["rain_ratio"]), 4),
+        "wind_dir_deg": int(row["wind_dir_deg"]),
+        "wind_speed_max_kmh": round(float(row["wind_speed_max_kmh"]), 1),
+        "gate_g": round(float(row["gate_g"]), 4),
+        "effective_ratio": round(float(row["effective_ratio"]), 4),
+        "rain_mm": round(float(row["rain_mm"]), 2),
+        "cell_tmax_c": round(float(row["cell_tmax_c"]), 2),
+        "cell_tmin_c": round(float(row["cell_tmin_c"]), 2),
+        "temp_offset_c": round(float(row["temp_offset_c"]), 2),
+        "tmax_c": round(float(row["tmax_c"]), 2),
+        "tmin_c": round(float(row["tmin_c"]), 2),
+        "tmean_c": round(float(row["tmean_c"]), 2),
+        "eto_mm_day": round(float(row["eto_mm_day"]), 2),
+        "inside_validated_band": bool(row["inside_validated_band"]),
+        "distance_km": distance_km,
+        "in_domain": in_domain,
+        "driver_model": "ecmwf_ifs025",
+        "driver_source": "Open-Meteo ECMWF IFS (0.25 deg)"
     }
 
 

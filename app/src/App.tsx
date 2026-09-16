@@ -34,7 +34,7 @@ export default function App() {
 }
 
 function ParamAppShell() {
-  const { prediction, loading, currentCoords, setLocation, domainFallbackNote, requestLocation } = useAgromet();
+  const { prediction, loading, currentCoords, setLocation, domainFallbackNote, requestLocation, gpsStatus } = useAgromet();
   const [showSplash, setShowSplash] = useState<boolean>(true);
   const [sheetOpen, setSheetOpen] = useState<boolean>(false);
   const [windowWidth, setWindowWidth] = useState<number>(() =>
@@ -183,6 +183,13 @@ function ParamAppShell() {
             domainFallbackNote={domainFallbackNote}
             isMobile={isMobile}
           />
+          {/* Temporary visible GPS debug chip (zIndex: 30, readable on phone without DevTools) */}
+          <div
+            className="fixed left-4 top-[72px] max-w-[48vw] md:max-w-md px-2.5 py-1.5 rounded-lg bg-black/90 text-emerald-400 font-mono text-[11px] leading-tight shadow-xl border border-neutral-700 pointer-events-auto select-all break-words"
+            style={{ zIndex: 30 }}
+          >
+            {gpsStatus}
+          </div>
         </>
       )}
 

@@ -11,6 +11,7 @@ interface AgrometContextValue {
   domainFallbackNote: string | null;
   setLocation: (lat: number, lon: number) => Promise<void>;
   requestLocation: () => void;
+  gpsStatus: string;
 }
 
 const DEFAULT_COORDS = { lat: 16.700, lon: 74.233 }; // Kolhapur
@@ -26,6 +27,7 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [currentCoords, setCurrentCoords] = useState(DEFAULT_COORDS);
   const [isOutOfDomain, setIsOutOfDomain] = useState<boolean>(false);
   const [domainFallbackNote, setDomainFallbackNote] = useState<string | null>(null);
+  const [gpsStatus, setGpsStatus] = useState<string>('idle');
 
   // Ref tracking whether a genuine GPS fix (or explicit user selection) has succeeded
   const hasRealFix = React.useRef<boolean>(false);
@@ -59,6 +61,7 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
   const requestLocation = useCallback(() => {
     if (!('geolocation' in navigator)) {
+      setGpsStatus('GPS fail code 0 navigator.geolocation unavailable');
       if (!hasRealFix.current) {
         setIsOutOfDomain(false);
         setDomainFallbackNote(null);
@@ -67,10 +70,15 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
       return;
     }
 
+    setGpsStatus('requesting…');
+
     const handleSuccess = (pos: GeolocationPosition) => {
       hasRealFix.current = true;
       const lat = pos.coords.latitude;
       const lon = pos.coords.longitude;
+      const acc = pos.coords.accuracy != null ? Math.round(pos.coords.accuracy) : 0;
+      setGpsStatus(`GPS ok ${lat.toFixed(4)},${lon.toFixed(4)} acc ${acc}m`);
+
       const inside =
         lat >= DOMAIN.latMin &&
         lat <= DOMAIN.latMax &&
@@ -91,6 +99,7 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
 
     const handleAttempt2Error = (err: GeolocationPositionError) => {
       console.warn('GPS attempt 2 failed:', err.message);
+      setGpsStatus(`GPS fail code ${err.code} ${err.message}`);
       // Kolhapur fallback must only ever run when GPS has definitively failed both attempts
       // and only if no real fix has succeeded
       if (!hasRealFix.current) {
@@ -104,6 +113,7 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const handleAttempt1Error = (err: GeolocationPositionError) => {
       console.warn('GPS attempt 1 failed, starting attempt 2:', err.message);
       if (hasRealFix.current) return;
+      setGpsStatus('requesting…');
       // Attempt 2: low accuracy, timeout 15000ms, maximumAge 60000ms
       navigator.geolocation.getCurrentPosition(
         handleSuccess,
@@ -142,6 +152,7 @@ export const AgrometProvider: React.FC<{ children: React.ReactNode }> = ({ child
         domainFallbackNote,
         setLocation,
         requestLocation,
+        gpsStatus,
       }}
     >
       {children}
