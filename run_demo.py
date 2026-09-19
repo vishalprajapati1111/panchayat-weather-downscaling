@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 import rasterio
 from rasterio.transform import Affine
-from scipy.ndimage import uniform_filter, map_coordinates
+from scipy.ndimage import uniform_filter, map_coordinates, gaussian_filter1d
 from scipy.interpolate import UnivariateSpline
 from scipy.signal import lfilter
 from scipy.optimize import minimize
@@ -219,6 +219,14 @@ def main():
 
     alpha_rot = ds / L_fit
     conv_upslope_rot = lfilter([1.0 - np.exp(-alpha_rot)], [1.0, -np.exp(-alpha_rot)], S_upslope_rot, axis=1)
+
+    # Lateral dispersion on leeward wake (sigma_perp = 20.0 km)
+    # Preserves windward/crest completely (weight = 0 for x_cross <= 8 km), smooths lee shadows (weight = 1 for x_cross >= 20 km)
+    sigma_perp_km = 20.0
+    sigma_perp_cells = sigma_perp_km / ds
+    conv_diffused = gaussian_filter1d(conv_upslope_rot, sigma=sigma_perp_cells, axis=0)
+    weight_downwind = np.clip((x_cross_rot - 8.0) / 12.0, 0.0, 1.0)
+    conv_upslope_rot = conv_upslope_rot * (1.0 - weight_downwind) + conv_diffused * weight_downwind
 
     P_bg_rot = P_inf + (P_coast - P_inf) * np.exp(-np.maximum(0.0, x_cross_rot) / L_fit)
     P_tot_rot = P_bg_rot + eta_fit * conv_upslope_rot
