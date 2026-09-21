@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PARAM — SIH26074 Team KAMINARI ID 12</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Montserrat:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#12172B;--slate:#5A6278;--navy:#1B2A78;--deep:#121C52;
+  --rule:#E4E8F2;--canvas:#F4F6FB;--white:#FFFFFF;
+  --h1:#F08A24;--h2:#2E6FD9;--h3:#2FA84F;--h4:#7B3FA8;--h5:#C2258F;--h6:#0E8B96;
+  --pos:#1E8E4A;--neg:#C0392B;--amber:#B5730A;
+  --shadow:0 4px 16px rgba(20,34,96,.07);
+}
+body{background:#1e1e1e;font-family:'Inter',sans-serif;color:var(--ink);}
+.deck-nav{display:flex;gap:10px;padding:16px 20px;background:#111;flex-wrap:wrap;}
+.deck-nav a{color:#fff;text-decoration:none;font-size:13px;padding:5px 12px;background:rgba(255,255,255,.14);border-radius:5px;}
+.deck-nav strong{color:white;font-size:13px;padding:5px 0;}
+/* SLIDE */
+.slide{width:1920px;height:1080px;background:var(--canvas);position:relative;display:flex;flex-direction:column;margin:0 auto 32px;overflow:hidden;}
+/* HEADER */
+.hdr{width:100%;height:88px;background:var(--white);flex-shrink:0;display:flex;align-items:center;padding:0 56px;position:relative;z-index:10;}
+.hdr::after{content:'';position:absolute;bottom:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#F08A24 0%,#C2258F 33%,#2E6FD9 66%,#0E8B96 100%);}
+.hdr-brand{display:flex;align-items:center;gap:10px;font-family:'Montserrat',sans-serif;font-weight:800;font-size:26px;color:var(--navy);}
+.hdr-logo{width:34px;height:34px;background:var(--navy);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+.hdr-mid{flex:1;text-align:center;font-family:'Montserrat',sans-serif;font-weight:700;font-size:17px;color:var(--navy);}
+.hdr-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.sih-pill{background:var(--navy);color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:13px;padding:3px 10px;border-radius:4px;letter-spacing:.04em;}
+.hdr-sub{font-weight:600;font-size:14px;color:var(--slate);}
+/* FOOTER */
+.ftr{width:100%;height:32px;background:var(--deep);position:absolute;bottom:0;left:0;display:flex;align-items:center;padding:0 56px;z-index:10;}
+.ftr-prog{position:absolute;top:0;left:0;height:3px;background:var(--h1);}
+.ftr-l,.ftr-r{font-weight:500;font-size:13px;color:#fff;}
+.ftr-r{margin-left:auto;}
+/* CARDS */
+.card{background:var(--white);border-radius:14px;border:1px solid var(--rule);box-shadow:var(--shadow);position:relative;overflow:hidden;}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:5px;border-radius:14px 14px 0 0;}
+/* TYPE */
+.eyebrow{font-weight:700;font-size:13px;color:var(--slate);letter-spacing:.1em;text-transform:uppercase;line-height:1.2;margin-bottom:6px;}
+.pg-title{font-family:'Montserrat',sans-serif;font-weight:800;color:var(--navy);letter-spacing:-.01em;line-height:1.05;}
+/* Spine sentence */
+.spine{font-size:26px;font-weight:400;color:var(--ink);line-height:1.35;margin-top:8px;margin-bottom:4px;font-family:'Inter',sans-serif;}
+/* Layer 1 */
+.l1{font-size:18px;font-weight:400;color:var(--ink);line-height:1.5;font-family:'Inter',sans-serif;}
+/* Layer 2 */
+.l2{font-size:15px;font-weight:400;color:var(--slate);line-height:1.52;font-family:'Inter',sans-serif;}
+/* Parenthetical kicker */
+.kicker{font-size:12.5px;font-weight:500;color:var(--slate);font-family:'Inter',sans-serif;letter-spacing:.01em;}
+/* PILLS */
+.pill-await{background:#FFF1E6;color:#B5730A;border:1px solid #E8B882;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.pill-live{background:#E6F4EA;color:#1E8E4A;border:1px solid #89CFA0;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.pill-cal{background:#EEF0F8;color:var(--navy);border:1px solid #B0B8D8;font-size:12px;font-weight:700;padding:2px 8px;border-radius:6px;}
+.pill-val{background:var(--h3);color:#fff;font-size:12px;font-weight:700;padding:2px 10px;border-radius:6px;}
+/* ICON TILE */
+.itile{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.it1{background:rgba(240,138,36,.13)}.it2{background:rgba(46,111,217,.13)}.it3{background:rgba(47,168,79,.13)}
+.it4{background:rgba(123,63,168,.13)}.it5{background:rgba(194,37,143,.13)}.it6{background:rgba(14,139,150,.13)}
+/* GLASS TILE */
+.glass{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);border-radius:13px;padding:16px 22px;}
+.glass-val{font-family:'Montserrat',sans-serif;font-weight:800;font-size:48px;color:#fff;line-height:1;font-variant-numeric:tabular-nums lining-nums;}
+.glass-cap{font-weight:500;font-size:14px;color:rgba(255,255,255,.72);margin-top:6px;line-height:1.4;}
+/* HEX BADGE */
+.hex{width:32px;height:32px;clip-path:polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);display:flex;align-items:center;justify-content:center;font-family:'Montserrat',sans-serif;font-weight:800;font-size:12px;color:#fff;flex-shrink:0;}
+.ht1{background:var(--h1)}.ht2{background:var(--h3)}.ht3{background:var(--slate)}
+/* TABLES */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{background:#EAEDF6;padding:8px 14px;font-weight:700;font-size:13.5px;color:var(--navy);letter-spacing:.04em;text-transform:uppercase;text-align:left;border-bottom:1px solid var(--rule);}
+.tbl td{padding:10px 14px;font-size:14.5px;color:var(--ink);border-bottom:1px solid var(--rule);vertical-align:top;}
+.tbl tr:nth-child(even) td{background:#FAFBFD;}
+/* EMPH */
+.emph{background:var(--deep);border-radius:10px;color:#fff;padding:12px 28px;display:flex;align-items:center;gap:20px;}
+/* DIVIDER */
+.rule-h{height:1px;background:var(--rule);}
+/* COL HEADER */
+.col-hdr{background:var(--navy);border-radius:10px;height:42px;display:flex;align-items:center;padding:0 20px;margin-bottom:8px;justify-content:space-between;}
+.col-hdr-t{font-family:'Montserrat',sans-serif;font-weight:700;font-size:17px;color:#fff;}
+.col-hdr-n{font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;color:rgba(255,255,255,.55);}
+/* NOT USED */
+.not-used{background:#F6F7FB;border:1px solid #DDE1EC;border-radius:8px;padding:10px 16px;}
+/* TIER ROW */
+.tier-row{display:flex;align-items:flex-start;gap:14px;padding:9px 0;border-bottom:1px solid var(--rule);}
+/* MONO */
+.mono{font-family:'Courier New',Courier,monospace;}
+/* Ledger table */
+.ledger{width:100%;border-collapse:collapse;font-size:13px;table-layout:fixed;}
+.ledger th{background:var(--navy);color:#fff;padding:6px 8px;font-weight:700;font-size:11.5px;letter-spacing:.05em;text-transform:uppercase;text-align:left;border-right:1px solid rgba(255,255,255,.15);}
+.ledger td{padding:4px 8px;vertical-align:top;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);font-size:12px;color:var(--ink);line-height:1.32;}
+.ledger tr:nth-child(even) td{background:#FAFBFE;}
+.ledger .eq{font-family:'Courier New',monospace;font-size:11.5px;color:var(--navy);line-height:1.32;display:block;}
+.ledger .src{font-size:11px;color:var(--h2);font-family:'Courier New',monospace;line-height:1.3;display:block;}
+.ledger .unsrc{font-size:11px;color:var(--neg);font-weight:700;line-height:1.3;display:block;}
+
+/* Print styles */
+@page { size: 1920px 1080px; margin: 0; }
+@media print {
+  .slide{margin:0;page-break-after:always;}
+  .deck-nav{display:none !important;}
+  body{background:#fff;}
+}
+</style>
+</head>
+<body>
+
+<div class="deck-nav">
+  <strong>KAMINARI · PARAM · SIH26074 — Pass 18 (0-BIS Tightening)</strong>
+  <a href="#f1">① Title</a><a href="#f2">② The Gap</a><a href="#f3">③ Formula Ledger</a>
+  <a href="#f4">④ Feasibility</a><a href="#f5">⑤ Impact</a><a href="#f6">⑥ References</a>
+</div>
+
+<!-- ═══════════════ FRAME 1 — TITLE ═══════════════════════════════════════ -->
+<div id="f1" class="slide">
+  <div class="hdr">
+    <div class="hdr-brand"><div class="hdr-logo"><svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 7,10 12,14 19,5"/></svg></div>KAMINARI</div>
+    <div class="hdr-mid"></div>
+    <div class="hdr-right"><span class="sih-pill">SIH 2026</span><span class="hdr-sub">SIH26074 · Team ID 12</span></div>
+  </div>
+
+  <div style="position:absolute;top:88px;left:0;right:0;bottom:50px;display:flex;">
+    <div style="flex:0 0 960px;padding:32px 56px 20px;display:flex;flex-direction:column;justify-content:space-between;">
+      <div>
+        <!-- HEADLINE PASS 17 -->
+        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:34px;color:var(--navy);line-height:1.2;margin-bottom:20px;max-width:860px;">One weather number for 138 villages becomes 16,943 village numbers — every night, in 8.8 seconds, on one laptop.</div>
+        <div class="eyebrow" style="margin-bottom:20px;">SMART INDIA HACKATHON 2026</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:148px;color:var(--navy);letter-spacing:-.04em;line-height:1.02;margin-bottom:18px;">PARAM</div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:27px;color:var(--ink);line-height:1.26;margin-bottom:8px;max-width:820px;">Village-scale weather and water-need<br>forecasting for the Western Ghats</div>
+        <!-- SPINE F1 -->
+        <div class="spine" style="max-width:880px;color:var(--navy);margin-top:6px;margin-bottom:4px;">One forecast number is issued for an area holding 138 villages that do not share a climate.</div>
+      </div>
+      <div style="border-top:1px solid var(--rule);padding-top:4px;">
+        <div style="display:flex;align-items:baseline;min-height:40px;border-bottom:1px solid var(--rule);padding:6px 0;">
+          <span style="flex:0 0 220px;font-weight:700;font-size:13px;color:var(--slate);letter-spacing:.07em;text-transform:uppercase;">Problem Statement ID</span>
+          <span style="font-weight:400;font-size:16px;color:var(--ink);">SIH26074</span>
+        </div>
+        <div style="display:flex;align-items:baseline;border-bottom:1px solid var(--rule);padding:6px 0;">
+          <span style="flex:0 0 220px;font-weight:700;font-size:13px;color:var(--slate);letter-spacing:.07em;text-transform:uppercase;flex-shrink:0;">Problem Statement Title</span>
+          <span style="font-weight:400;font-size:15px;color:var(--ink);line-height:1.4;">Downscaling of weather forecast from Block level to Panchayat level: Inferring high-resolution plots/ data/ information from low-resolution plot/ data/ information/ variables for agro-meteorological advisory services.</span>
+        </div>
+        <div style="display:flex;align-items:baseline;min-height:40px;border-bottom:1px solid var(--rule);padding:6px 0;">
+          <span style="flex:0 0 220px;font-weight:700;font-size:13px;color:var(--slate);letter-spacing:.07em;text-transform:uppercase;">PS Category</span>
+          <span style="font-weight:400;font-size:16px;color:var(--ink);">Software</span>
+        </div>
+        <div style="display:flex;align-items:baseline;min-height:40px;border-bottom:1px solid var(--rule);padding:6px 0;">
+          <span style="flex:0 0 220px;font-weight:700;font-size:13px;color:var(--slate);letter-spacing:.07em;text-transform:uppercase;">Theme</span>
+          <span style="font-weight:400;font-size:16px;color:var(--ink);">Agriculture, FoodTech &amp; Rural Development</span>
+        </div>
+        <div style="display:flex;align-items:baseline;min-height:40px;padding:6px 0;">
+          <span style="flex:0 0 220px;font-weight:700;font-size:13px;color:var(--slate);letter-spacing:.07em;text-transform:uppercase;">Team Name / ID</span>
+          <span style="font-weight:400;font-size:16px;color:var(--ink);">KAMINARI / 12</span>
+        </div>
+      </div>
+      <div style="margin-bottom:8px;">
+        <div class="eyebrow" style="margin-bottom:8px;color:var(--h2);">RUNNING SYSTEM</div>
+        <div style="display:flex;gap:14px;flex-wrap:wrap;">
+          <a style="display:inline-flex;align-items:center;gap:7px;padding:7px 15px;border-radius:18px;border:1px solid var(--h2);color:var(--h2);font-weight:600;font-size:14px;text-decoration:none;background:#fff;">agromet-app.vercel.app<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 2H2a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V8M8 1h4m0 0v4m0-4L5 8"/></svg></a>
+          <a style="display:inline-flex;align-items:center;gap:7px;padding:7px 15px;border-radius:18px;border:1px solid var(--h2);color:var(--h2);font-weight:600;font-size:14px;text-decoration:none;background:#fff;">agromet-api.vercel.app<svg width="13" height="13" viewBox="0 0 13 13" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M5 2H2a1 1 0 00-1 1v8a1 1 0 001 1h8a1 1 0 001-1V8M8 1h4m0 0v4m0-4L5 8"/></svg></a>
+        </div>
+      </div>
+      <div>
+        <div class="eyebrow" style="margin-bottom:6px;">WHAT THE LENS DOES</div>
+        <div style="height:16px;border-radius:8px;background:linear-gradient(90deg,#2E6FD9 0%,#C9CFDE 50%,#D9A23C 100%);margin-bottom:6px;"></div>
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+          <span style="font-size:13px;color:var(--slate);font-weight:600;">0.3× rain shadow</span>
+          <span style="font-size:13px;color:var(--slate);font-weight:600;">1.0× cell avg</span>
+          <span style="font-size:13px;color:var(--slate);font-weight:600;">2.4× ridge</span>
+        </div>
+        <div style="display:flex;gap:24px;">
+          <span class="mono" style="font-size:13px;color:var(--slate);">η = 7.66 %</span>
+          <span class="mono" style="font-size:13px;color:var(--slate);">L = 20.84 km</span>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1;background:var(--deep);position:relative;overflow:hidden;">
+      <svg viewBox="0 0 960 580" width="960" height="580" style="position:absolute;top:0;left:0;" xmlns="http://www.w3.org/2000/svg">
+        <path d="M0,580 L0,420 Q80,408 160,388 Q240,366 310,340 Q370,314 410,272 Q440,236 460,185 Q472,150 478,120 Q482,100 484,88 L487,88 Q490,102 496,128 Q508,168 528,220 Q562,292 620,348 Q695,408 780,444 Q860,470 960,486 L960,580 Z" fill="rgba(255,255,255,.12)"/>
+        <path d="M0,420 Q80,408 160,388 Q240,366 310,340 Q370,314 410,272 Q440,236 460,185 Q472,150 478,120 Q482,100 484,88 L487,88 Q490,102 496,128 Q508,168 528,220 Q562,292 620,348 Q695,408 780,444 Q860,470 960,486" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="2"/>
+        <path d="M0,350 Q80,328 160,298 Q240,262 310,220 Q360,186 420,148 Q450,128 470,110 Q480,100 484,92 L488,92 Q494,98 510,118 Q540,155 580,205 Q640,272 720,320 Q810,364 960,390" fill="none" stroke="#64B5F6" stroke-width="3"/>
+        <text x="200" y="230" font-family="Inter" font-size="15" fill="#90CAF9" font-weight="600">Windward rainfall</text>
+        <g stroke="rgba(255,255,255,.6)" stroke-width="2" fill="none"><line x1="30" y1="370" x2="78" y2="370"/><polyline points="70,364 78,370 70,376"/><line x1="30" y1="395" x2="78" y2="395"/><polyline points="70,389 78,395 70,401"/><line x1="30" y1="420" x2="78" y2="420"/><polyline points="70,414 78,420 70,426"/></g>
+        <text x="14" y="362" font-family="Courier New" font-size="13" fill="rgba(255,255,255,.75)" font-weight="700">250°</text>
+        <line x1="148" y1="388" x2="148" y2="548" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+        <line x1="485" y1="88" x2="485" y2="548" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+        <line x1="780" y1="444" x2="780" y2="548" stroke="rgba(255,255,255,.25)" stroke-width="1.5"/>
+        <text x="80" y="572" font-family="Montserrat" font-size="14" fill="rgba(255,255,255,.9)" font-weight="700" letter-spacing="3">COAST</text>
+        <text x="448" y="572" font-family="Montserrat" font-size="14" fill="rgba(255,255,255,.9)" font-weight="700" letter-spacing="3">CREST</text>
+        <text x="820" y="572" font-family="Montserrat" font-size="14" fill="rgba(255,255,255,.9)" font-weight="700" letter-spacing="2">RAIN SHADOW</text>
+      </svg>
+      <div style="position:absolute;right:40px;top:32px;width:260px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:12px 14px;">
+        <div style="font-size:12px;color:rgba(255,255,255,.65);font-weight:600;letter-spacing:.06em;text-transform:uppercase;margin-bottom:10px;">ONE FORECAST CELL → VILLAGE DETAIL</div>
+        <svg viewBox="0 0 232 90" width="232" height="90" xmlns="http://www.w3.org/2000/svg" style="display:block;margin-bottom:8px;">
+          <rect x="2" y="2" width="75" height="75" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+          <text x="39" y="46" font-family="Montserrat" font-size="30" fill="rgba(255,255,255,.85)" text-anchor="middle" font-weight="800">T</text>
+          <text x="39" y="68" font-family="Inter" font-size="12" fill="rgba(255,255,255,.7)" text-anchor="middle">5.82 mm</text>
+          <line x1="79" y1="39" x2="108" y2="39" stroke="rgba(255,255,255,.4)" stroke-width="1.5" stroke-dasharray="4,3"/>
+          <polyline points="103,33 109,39 103,45" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="1.5"/>
+          <g fill="rgba(255,255,255,.5)" stroke="rgba(255,255,255,.7)" stroke-width="1"><circle cx="125" cy="22" r="7"/><circle cx="145" cy="35" r="8"/><circle cx="130" cy="52" r="7"/><circle cx="155" cy="55" r="6"/><circle cx="170" cy="30" r="7"/><circle cx="168" cy="62" r="5"/><circle cx="186" cy="45" r="6"/><circle cx="200" cy="25" r="5"/><circle cx="198" cy="65" r="5"/><circle cx="214" cy="40" r="4"/><circle cx="222" cy="22" r="4"/><circle cx="222" cy="60" r="4"/></g>
+        </svg>
+        <div style="font-size:12px;color:rgba(255,255,255,.85);font-weight:700;">138 villages</div>
+      </div>
+      <div style="position:absolute;left:0;right:0;bottom:0;display:flex;border-top:1px solid rgba(255,255,255,.12);">
+        <div class="glass" style="flex:1;border-radius:0;border:none;border-right:1px solid rgba(255,255,255,.1);padding:16px 28px;">
+          <div class="glass-val" style="font-size:40px;">2.14 → 6.44</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:600;font-size:20px;color:rgba(255,255,255,.85);margin-top:6px;">mm</div>
+          <div class="glass-cap">Siddihalli to Kalgadde across same 28 km cell</div>
+        </div>
+        <div class="glass" style="flex:1;border-radius:0;border:none;padding:16px 28px;"><div class="glass-val">3×</div><div class="glass-cap" style="margin-top:8px;">three times more rain the coarse model misses</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="ftr"><div class="ftr-prog" style="width:calc(100%/6);"></div><span class="ftr-l">PARAM — village-scale agromet forecasting</span><span class="ftr-r">@SIH Idea submission- Template &nbsp;·&nbsp; 1 / 6</span></div>
+</div>
+
+<!-- ═══════════════ FRAME 2 — THE GAP ═══════════════════════════════════════ -->
+<div id="f2" class="slide">
+  <div class="hdr"><div class="hdr-brand"><div class="hdr-logo"><svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 7,10 12,14 19,5"/></svg></div>KAMINARI</div><div class="hdr-mid"></div><div class="hdr-right"><span class="sih-pill">SIH 2026</span><span class="hdr-sub">SIH26074 · Team ID 12</span></div></div>
+
+  <div style="position:absolute;top:88px;left:56px;right:56px;bottom:50px;display:flex;flex-direction:column;">
+    <!-- Title block -->
+    <div style="flex-shrink:0;padding-top:8px;">
+      <div class="eyebrow" style="margin-bottom:4px;">SMART INDIA HACKATHON 2026 · SIH26074</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:8px;height:52px;border-radius:4px;background:var(--h1);flex-shrink:0;margin-top:4px;"></div>
+        <div style="flex:1;">
+          <div class="pg-title" style="font-size:42px;">THE GAP, AND WHAT PARAM DOES ABOUT IT</div>
+          <!-- SPINE F2 -->
+          <div class="spine">Across 80 km of the Western Ghats, rain falls from 3,300 mm at the coast to 318.1 mm inland — a tenfold collapse, and the grid cannot see it.</div>
+        </div>
+      </div>
+      <div class="rule-h" style="margin-top:6px;margin-bottom:8px;"></div>
+    </div>
+
+    <!-- Hero: terrain cross-section + problems left rail -->
+    <div style="display:flex;gap:24px;flex:1;min-height:0;margin-bottom:6px;">
+
+      <!-- LEFT RAIL: 4 problem rows -->
+      <div style="flex:0 0 440px;display:flex;flex-direction:column;gap:8px;min-height:0;">
+        <div class="eyebrow" style="margin-bottom:2px;">CURRENT PROBLEMS</div>
+        <div style="display:flex;flex-direction:column;gap:8px;flex:1;">
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(240,138,36,.05);border:1px solid rgba(240,138,36,.2);border-radius:10px;padding:10px 14px;flex:1;">
+            <div class="itile it1" style="margin-top:2px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F08A24" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="9" height="9"/><rect x="13" y="2" width="9" height="9"/><rect x="2" y="13" width="9" height="9"/><rect x="13" y="13" width="9" height="9"/></svg></div>
+            <div><div class="l1" style="font-weight:700;font-size:15.5px;margin-bottom:2px;">Forecasts arrive in 28 km squares.</div><div class="l2">One number covers a coastal strip, an escarpment and a rain shadow — all with wildly different rainfall.</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(240,138,36,.05);border:1px solid rgba(240,138,36,.2);border-radius:10px;padding:10px 14px;flex:1;">
+            <div class="itile it1" style="margin-top:2px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F08A24" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="4" rx="1"/><rect x="2" y="12" width="20" height="4" rx="1"/><rect x="2" y="19" width="20" height="2" rx="1"/></svg></div>
+            <div><div class="l1" style="font-weight:700;font-size:15.5px;margin-bottom:2px;">Advisories are issued at block level.</div><div class="l2">The panchayat that needs the number is two orders of magnitude smaller than the grid that produces it.</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(240,138,36,.05);border:1px solid rgba(240,138,36,.2);border-radius:10px;padding:10px 14px;flex:1;">
+            <div class="itile it1" style="margin-top:2px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F08A24" stroke-width="2" stroke-linecap="round"><path d="M3 18 Q6 12 12 10 Q16 8 20 12"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+            <div><div class="l1" style="font-weight:700;font-size:15.5px;">The Ghats break interpolation.</div></div>
+          </div>
+          <div style="display:flex;align-items:flex-start;gap:12px;background:rgba(240,138,36,.05);border:1px solid rgba(240,138,36,.2);border-radius:10px;padding:10px 14px;flex:1;">
+            <div class="itile it1" style="margin-top:2px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#F08A24" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M12 2 L12 5 M12 19 L12 22 M2 12 L5 12 M19 12 L22 12"/></svg></div>
+            <div><div class="l1" style="font-weight:700;font-size:15.5px;margin-bottom:2px;">Farmers receive weather, not a decision.</div><div class="l2">"ETo 5.2 mm/day" is not an answer to "do I irrigate today". Numbers without context do not reach the field.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HERO: Terrain cross-section 900px -->
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div class="eyebrow" style="margin-bottom:4px;">TERRAIN CROSS-SECTION — 250° MONSOON INFLOW · SRTM 30 m BASE</div>
+        <!-- Main SVG terrain diagram -->
+        <div style="flex:1;background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+          <div style="flex:1;position:relative;min-height:0;">
+            <svg viewBox="0 0 1100 460" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+              <defs>
+                <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#D6E8FA"/>
+                  <stop offset="100%" stop-color="#EEF5FC"/>
+                </linearGradient>
+                <linearGradient id="terrainGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#8FAB72"/>
+                  <stop offset="50%" stop-color="#7A9460"/>
+                  <stop offset="100%" stop-color="#6B7E52"/>
+                </linearGradient>
+                <linearGradient id="seaGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="#3A8FC7"/>
+                  <stop offset="100%" stop-color="#5BA8D8"/>
+                </linearGradient>
+                <linearGradient id="rainGrad" x1="0" y1="0" x2="1" y2="0">
+                  <stop offset="0%" stop-color="rgba(46,111,217,.7)"/>
+                  <stop offset="35%" stop-color="rgba(46,111,217,.4)"/>
+                  <stop offset="60%" stop-color="rgba(46,111,217,.15)"/>
+                  <stop offset="100%" stop-color="rgba(46,111,217,.04)"/>
+                </linearGradient>
+              </defs>
+
+              <rect x="0" y="0" width="1100" height="460" fill="url(#skyGrad)"/>
+              <rect x="0" y="300" width="90" height="160" fill="url(#seaGrad)"/>
+              <path d="M0,300 Q20,295 40,298 Q60,301 90,296 L90,460 L0,460 Z" fill="#4A9BD0" opacity=".6"/>
+
+              <path d="M90,296 Q130,270 180,230 Q230,190 280,145 Q310,122 340,108 Q370,96 400,88 Q420,84 430,82 Q445,86 460,98 Q490,120 530,155 Q580,198 640,240 Q700,275 760,298 Q820,316 880,328 Q940,335 1000,338 Q1060,340 1100,341 L1100,460 L90,460 Z" fill="url(#terrainGrad)"/>
+              <path d="M90,296 Q130,270 180,230 Q230,190 280,145 Q310,122 340,108 Q370,96 400,88 Q420,84 430,82 Q445,86 460,98 Q490,120 530,155 Q580,198 640,240 Q700,275 760,298 Q820,316 880,328 Q940,335 1000,338 Q1060,340 1100,341" fill="none" stroke="#556B3A" stroke-width="2"/>
+
+              <!-- Rain lines -->
+              <g stroke="url(#rainGrad)" stroke-width="1.5" opacity=".8">
+                <line x1="95" y1="30" x2="90" y2="296"/><line x1="105" y1="25" x2="100" y2="270"/><line x1="115" y1="28" x2="110" y2="230"/><line x1="125" y1="26" x2="120" y2="230"/><line x1="135" y1="30" x2="130" y2="190"/><line x1="145" y1="27" x2="140" y2="190"/><line x1="155" y1="25" x2="150" y2="150"/><line x1="165" y1="28" x2="160" y2="145"/><line x1="175" y1="30" x2="170" y2="110"/><line x1="185" y1="26" x2="180" y2="105"/>
+                <line x1="210" y1="35" x2="205" y2="146"/><line x1="235" y1="33" x2="230" y2="125"/><line x1="260" y1="38" x2="255" y2="108"/><line x1="290" y1="40" x2="285" y2="88"/><line x1="325" y1="42" x2="320" y2="72"/><line x1="365" y1="46" x2="360" y2="60"/><line x1="400" y1="50" x2="395" y2="54"/>
+                <line x1="450" y1="60" x2="447" y2="95" stroke="rgba(46,111,217,.22)"/><line x1="490" y1="70" x2="487" y2="128" stroke="rgba(46,111,217,.18)"/><line x1="540" y1="80" x2="537" y2="162" stroke="rgba(46,111,217,.13)"/><line x1="600" y1="90" x2="597" y2="202" stroke="rgba(46,111,217,.10)"/><line x1="660" y1="95" x2="657" y2="242" stroke="rgba(46,111,217,.07)"/>
+                <line x1="750" y1="100" x2="747" y2="300" stroke="rgba(46,111,217,.05)"/><line x1="870" y1="105" x2="867" y2="330" stroke="rgba(46,111,217,.04)"/>
+              </g>
+
+              <!-- 28 km grid step dashed staircase -->
+              <g stroke="#F08A24" stroke-width="2.5" stroke-dasharray="8,5" fill="none" opacity=".85">
+                <line x1="90" y1="180" x2="280" y2="180"/>
+                <line x1="280" y1="120" x2="470" y2="120"/>
+                <line x1="470" y1="210" x2="660" y2="210"/>
+                <line x1="660" y1="325" x2="850" y2="325"/>
+                <line x1="850" y1="335" x2="1100" y2="335"/>
+                <line x1="280" y1="180" x2="280" y2="120"/>
+                <line x1="470" y1="120" x2="470" y2="210"/>
+                <line x1="660" y1="210" x2="660" y2="325"/>
+                <line x1="850" y1="325" x2="850" y2="335"/>
+              </g>
+              <rect x="148" y="154" width="130" height="20" rx="4" fill="rgba(255,248,230,.92)"/>
+              <text x="213" y="168" font-family="Inter" font-size="13" fill="#B5730A" font-weight="700" text-anchor="middle">← 28 km grid step →</text>
+
+              <!-- 3,300 mm at coast -->
+              <line x1="90" y1="40" x2="90" y2="296" stroke="#2E6FD9" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+              <rect x="2" y="34" width="94" height="42" rx="6" fill="rgba(46,111,217,.12)" stroke="#2E6FD9" stroke-width="1.2"/>
+              <text x="49" y="52" font-family="Montserrat" font-size="14" fill="#1B2A78" font-weight="800" text-anchor="middle">3,300 mm</text>
+              <text x="49" y="68" font-family="Inter" font-size="11" fill="#2E6FD9" text-anchor="middle">annual coast</text>
+
+              <!-- 318.1 mm inland -->
+              <line x1="1050" y1="60" x2="1050" y2="338" stroke="#9B2626" stroke-width="1" stroke-dasharray="4,3" opacity=".5"/>
+              <rect x="1000" y="54" width="95" height="42" rx="6" fill="rgba(192,57,43,.10)" stroke="#9B2626" stroke-width="1.2"/>
+              <text x="1047" y="72" font-family="Montserrat" font-size="14" fill="#9B2626" font-weight="800" text-anchor="middle">318.1 mm</text>
+              <text x="1047" y="88" font-family="Inter" font-size="11" fill="#9B2626" text-anchor="middle">annual inland</text>
+
+              <!-- 80 km span dimension line -->
+              <line x1="90" y1="410" x2="1050" y2="410" stroke="var(--slate)" stroke-width="1.5"/>
+              <line x1="90" y1="403" x2="90" y2="417" stroke="var(--slate)" stroke-width="1.5"/>
+              <line x1="1050" y1="403" x2="1050" y2="417" stroke="var(--slate)" stroke-width="1.5"/>
+              <rect x="490" y="398" width="80" height="20" rx="4" fill="var(--canvas)"/>
+              <text x="530" y="412" font-family="Montserrat" font-size="14" fill="var(--slate)" font-weight="700" text-anchor="middle">80 km</text>
+
+              <text x="90" y="450" font-family="Montserrat" font-size="12" fill="var(--slate)" font-weight="700" text-anchor="middle">COAST</text>
+              <text x="430" y="440" font-family="Montserrat" font-size="12" fill="var(--slate)" font-weight="700" text-anchor="middle">CREST</text>
+              <text x="1050" y="450" font-family="Montserrat" font-size="12" fill="var(--slate)" font-weight="700" text-anchor="middle">INTERIOR</text>
+
+              <g stroke="#64B5F6" stroke-width="2" fill="none" opacity=".7">
+                <line x1="30" y1="180" x2="80" y2="180"/><polyline points="72,174 80,180 72,186"/>
+                <line x1="20" y1="210" x2="70" y2="210"/><polyline points="62,204 70,210 62,216"/>
+                <line x1="30" y1="240" x2="80" y2="240"/><polyline points="72,234 80,240 72,246"/>
+              </g>
+              <text x="14" y="176" font-family="Courier New" font-size="12" fill="#64B5F6" font-weight="700">250°</text>
+            </svg>
+          </div>
+          <!-- Caption 18px -->
+          <div style="padding:8px 20px;background:#FAFBFD;border-top:1px solid var(--rule);flex-shrink:0;">
+            <div style="font-size:18px;font-weight:600;color:var(--navy);line-height:1.3;">Ten times less rain. Ninety minutes' drive. One forecast number.</div>
+          </div>
+        </div>
+
+        <!-- Demoted solution strip preserving all numbers verbatim -->
+        <div style="margin-top:6px;background:var(--white);border:1px solid var(--rule);border-radius:8px;padding:8px 14px;display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;flex-shrink:0;">
+          <div class="l2" style="font-size:14px;line-height:1.35;"><strong style="color:var(--navy);">A FROZEN TERRAIN LENS —</strong> Hills never move, so we solve the terrain once at 250 m detail from SRTM 30 m. That single solve resolves <span style="color:var(--pos);font-weight:700;">three times more</span> rainfall spread (2.14 → 6.44 mm) hiding inside one 28 km cell.</div>
+          <div class="l2" style="font-size:14px;line-height:1.35;"><strong style="color:var(--navy);">MASS-CONSERVING DISAGGREGATION —</strong> Inside every 0.25° cell the village ratios rescale so their area-weighted mean is exactly 1.0. The worst cell in the whole domain is off by <span style="color:var(--pos);font-weight:700;">4.44 × 10<sup style="font-size:9px;">−16</sup></span>.</div>
+          <div class="l2" style="font-size:14px;line-height:1.35;"><strong style="color:var(--navy);">TWO CLOCKS, FLAT COST —</strong> Terrain work runs once, ever. The nightly run covers all 16,943 villages in 8.8 s, and ten users or ten lakh users cost the same.</div>
+          <div class="l2" style="font-size:14px;line-height:1.35;"><strong style="color:var(--navy);">A DECISION, NOT A DATA POINT —</strong> Every village gets its own rainfall, Tmax, Tmin and crop water demand, plus a flag saying whether we validated there. Tmax error fell from 2.12 °C to 1.53 °C on IFS forecasts.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Emphasis strip -->
+    <div class="emph" style="padding:8px 20px;flex-shrink:0;">
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="rgba(255,255,255,.7)" stroke-width="1.5" stroke-linecap="round" style="flex-shrink:0;"><circle cx="9" cy="9" r="7"/><line x1="9" y1="5" x2="9" y2="9"/><circle cx="9" cy="12" r=".8" fill="rgba(255,255,255,.7)"/></svg>
+      <div style="font-weight:600;font-size:14.5px;color:#fff;line-height:1.4;flex:1;">ECMWF IFS 0.25° is the live driver for every forecast in this deck. The IMD API is the designated national primary in our ingestion hierarchy. ERA5 is used for calibration and as the degraded-mode floor, never as the live input.</div>
+    </div>
+  </div>
+
+  <div class="ftr"><div class="ftr-prog" style="width:calc(100%/6*2);"></div><span class="ftr-l">PARAM — village-scale agromet forecasting</span><span class="ftr-r">@SIH Idea submission- Template &nbsp;·&nbsp; 2 / 6</span></div>
+</div>
+
+<!-- ═══════════════ FRAME 3 — FORMULA LEDGER ═════════════════════════════════ -->
+<div id="f3" class="slide">
+  <div style="position:absolute;top:0;left:0;right:0;height:1030px;overflow:hidden;pointer-events:none;z-index:0;opacity:.06;"><svg viewBox="0 0 1920 1030" width="1920" height="1030" preserveAspectRatio="xMidYMid slice"><path d="M0,900 Q200,870 400,800 Q600,730 750,640 Q850,560 900,460 Q930,380 950,300 Q960,250 965,200 Q970,250 985,320 Q1010,420 1060,520 Q1140,660 1260,750 Q1400,820 1560,870 Q1720,910 1920,930 L1920,1030 L0,1030 Z" fill="#1B2A78"/></svg></div>
+  <div class="hdr" style="position:relative;z-index:10;"><div class="hdr-brand"><div class="hdr-logo"><svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 7,10 12,14 19,5"/></svg></div>KAMINARI</div><div class="hdr-mid"></div><div class="hdr-right"><span class="sih-pill">SIH 2026</span><span class="hdr-sub">SIH26074 · Team ID 12</span></div></div>
+
+  <div style="position:absolute;top:88px;left:56px;right:56px;bottom:48px;display:flex;flex-direction:column;z-index:1;">
+
+    <!-- Title block -->
+    <div style="flex-shrink:0;padding-top:4px;padding-bottom:4px;">
+      <div class="eyebrow" style="margin-bottom:8px;">SMART INDIA HACKATHON 2026 · SIH26074</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:8px;height:48px;border-radius:4px;background:var(--h2);flex-shrink:0;margin-top:2px;"></div>
+        <div>
+          <div class="pg-title" style="font-size:34px;line-height:1.1;">WHAT WE COMPUTE, AND WHERE IT COMES FROM</div>
+          <!-- SPINE F3 -->
+          <div class="spine">We solve the mountain once, then every night we reshape the forecast with arithmetic, not a new model.</div>
+        </div>
+      </div>
+      <div class="rule-h" style="margin-top:4px;"></div>
+    </div>
+
+    <!-- Main content: ledger left, gauge right -->
+    <div style="display:flex;gap:18px;flex:1;min-height:0;margin-top:4px;">
+
+      <!-- LEDGER TABLE -->
+      <div style="flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;">
+        <table class="ledger" style="width:100%;">
+          <thead>
+            <tr>
+              <th style="width:28px;">#</th>
+              <th style="width:310px;">IN PLAIN ENGLISH</th>
+              <th style="width:390px;">EQUATION AS IMPLEMENTED</th>
+              <th style="width:330px;">CONSTANTS AS USED</th>
+              <th style="width:60px;text-align:center;">TIME</th>
+              <th>SOURCE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr style="background:#EBF2FC;">
+              <td colspan="6" style="padding:3px 10px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;color:var(--navy);letter-spacing:0.02em;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);">RUNS ONCE, EVER — the mountain does not change.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h1);font-size:13px;">1</td>
+              <td>We build the elevation grid and measure cross-barrier distance along 250° inflow.</td>
+              <td><code class="eq">dh_ds = (h[2:] - h[:-2]) / (2.0 * ds * 1000.0)<br>S_upslope = C_w_U_dt * max(0, dh_ds) * exp(-h / H_w)</code></td>
+              <td>SRTM 30 m, 250 m output detail, domain 12.948–17.550 °N, 73.448–76.552 °E, C_w_U_dt = 2,108,160, H_w = 2,000 m</td>
+              <td></td>
+              <td><span class="src">release/run_demo.py:78–80, 215–218</span><span style="font-size:10.5px;color:var(--slate);">(Smith &amp; Barstad 2004)</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h2);font-size:13px;">2</td>
+              <td>We cut the domain into 16,943 village shapes and assign parent grid cells.</td>
+              <td><code class="eq">lon_c, lat_c = mean(pts[:, 0]), mean(pts[:, 1])<br>node_i, node_j = argmin(|lats-lat_c|), argmin(|lons-lon_c|)</code></td>
+              <td>DataMeet: 8,634 MH + 8,309 KA = 16,943 villages</td>
+              <td></td>
+              <td><span class="src">release/run_pipeline_b1_b10.py:51–58</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h3);font-size:13px;">3</td>
+              <td>We compute an orographic precipitation ratio field from coast to interior.</td>
+              <td><code class="eq">P_bg = P_inf + (P_coast - P_inf) * exp(-max(0, x) / L)<br>P_tot = P_bg + eta * conv_upslope; ratio = P_tot / P_inf</code></td>
+              <td>L=20.84 km, η=7.66 %, H_w=2,000 m; coast 3,300 mm, interior 318.1 mm (fitted to Chitradurga; 0.4 % error is circular); ratio 0.3×–­2.4×. No forecast used here.</td>
+              <td></td>
+              <td><span class="src">release/run_demo.py:80–84, 100–104, 223–224</span></td>
+            </tr>
+            <tr style="background:#EDF7EE;">
+              <td colspan="6" style="padding:3px 10px;font-family:'Montserrat',sans-serif;font-weight:600;font-size:13px;color:var(--pos);letter-spacing:0.02em;border-bottom:1px solid var(--rule);border-right:1px solid var(--rule);">RUNS EVERY NIGHT — 8.8 s for the whole domain.</td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h4);font-size:13px;">4</td>
+              <td>Monsoon-bearing wind preserves the terrain multiplier; other wind directions fade it.</td>
+              <td><code class="eq">g = max(0, cos(wind_dir - 250°))</code></td>
+              <td>250° inflow bearing</td>
+              <td></td>
+              <td><span class="src">release/api/main.py:194 (serving)<br>release/outputs/village_daily_20260917.csv</span><span class="unsrc" style="font-size:10px;">script uncommitted — see frame 4</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h5);font-size:13px;">5</td>
+              <td>The continuous wind gate damps the terrain ratio toward neutral one.</td>
+              <td><code class="eq">effective_ratio = 1 + g * (ratio - 1)</code></td>
+              <td>g from row 4; effective_ratio → 1.0 (g=0)</td>
+              <td></td>
+              <td><span class="src">release/api/main.py:195 (serving)<br>release/outputs/village_daily_20260917.csv</span><span class="unsrc" style="font-size:10px;">script uncommitted — see frame 4</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h6);font-size:13px;">6</td>
+              <td>Rain disaggregates to villages and renormalizes to conserve cell total mass.</td>
+              <td><code class="eq">rain = cell_precip * effective_ratio<br>ratio_norm = ratio / area_weighted_mean(ratio)</code></td>
+              <td>rescaled per 0.25° cell, worst cell 4.44 × 10<sup style="font-size:9.5px;">−16</sup>, 247 lattice points (ECMWF IFS 0.25°)</td>
+              <td style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy);text-align:center;padding:4px 6px;white-space:nowrap;">0.67 s</td>
+              <td><span class="src">release/engine/checks/terrain_assertions.py:43–52<br>release/run_reproduction.py:88–149</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h1);font-size:13px;">7</td>
+              <td>Village temperature adjusts by height above its parent cell using standard lapse rate.</td>
+              <td><code class="eq">delta_elev = elev_local - elev_era5<br>T_local = T_era5 - 0.0065 * delta_elev</code></td>
+              <td>6.5 °C/km (0.0065 °C/m); ERA5 cell elevation</td>
+              <td></td>
+              <td><span class="src">release/ml/downscaling.py:93–94<br>release/engine/deterministic/temperature.py:49–50</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h2);font-size:13px;">8</td>
+              <td>We compute crop water demand from solar geometry and daily temperature range.</td>
+              <td><code class="eq">Ra = (24*60/pi)*0.0820*dr*(ws*sin(lat)*sin(δ) + cos(lat)*cos(δ)*sin(ws))<br>ETo = 0.0023 * 0.408 * Ra * sqrt(max(Tmax - Tmin, 0)) * (Tmean + 17.8)</code></td>
+              <td>Gsc=0.0820 MJ m⁻² min⁻¹, Hargreaves-Samani (1985), FAO-56</td>
+              <td></td>
+              <td><span class="src">release/run_pipeline_b1_b10.py:27–36, 100–104<br>release/rebuild_village_corrections.py:34–45</span></td>
+            </tr>
+            <tr>
+              <td style="font-weight:800;color:var(--h3);font-size:13px;">9</td>
+              <td>Machine learning trims leftover afternoon Tmax error while leaving Tmin unmodified.</td>
+              <td><code class="eq">T_corrected = physics_prediction + model.predict(X)<br>no hard clamp; design ceiling +2.0 °C</code></td>
+              <td>9 inputs, no village features; offsets +0.52–+1.97 °C (med +1.11); ceiling +2.0 °C; Tmax only</td>
+              <td style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:12px;color:var(--navy);text-align:center;padding:4px 6px;white-space:nowrap;">3.68 s</td>
+              <td><span class="src">release/ml/train_residual.py:16–27, 62–64</span><span style="font-size:10px;color:var(--slate);display:block;">(offsets are empirical outcomes, not code clamp)</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- Footer strip -->
+        <div style="margin-top:4px;background:#F0F2F8;border-radius:6px;padding:6px 12px;display:flex;align-items:center;gap:16px;flex-shrink:0;">
+          <div style="font-size:13px;color:var(--navy);font-weight:600;">8.8 s domain runtime. Daily 1.07 s · forcing 5.00 s · disagg 0.67 s · ML 3.68 s <span style="font-style:italic;color:var(--slate);font-weight:400;">(stages overlap; wall clock is not the sum)</span>.</div>
+          <div style="margin-left:auto;display:flex;gap:12px;align-items:center;flex-shrink:0;">
+            <code class="mono" style="font-size:12px;color:var(--slate);">http://127.0.0.1:8000/api/daily?lat=14.8135&amp;lon=74.1298</code>
+            <code class="mono" style="font-size:12px;background:#EDF0F7;padding:2px 6px;border-radius:4px;color:var(--navy);">054561a</code>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: mass-conservation gauge -->
+      <div style="flex:0 0 200px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:2px;">
+        <div class="eyebrow" style="margin-bottom:4px;text-align:center;">MASS CONSERVATION</div>
+        <!-- Gauge -->
+        <div style="background:var(--white);border:1px solid var(--rule);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;align-items:center;width:100%;">
+          <svg viewBox="0 -22 200 118" width="160" height="100" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+            <text x="100" y="1" font-family="Montserrat" font-size="28" fill="var(--navy)" text-anchor="middle" font-weight="800">1.0</text>
+            <path d="M30,86 A70,70 0 0,1 170,86" fill="none" stroke="#E4E8F2" stroke-width="14" stroke-linecap="round"/>
+            <line x1="100" y1="86" x2="100" y2="27.5" stroke="var(--navy)" stroke-width="3" stroke-linecap="round"/>
+            <circle cx="100" cy="86" r="5" fill="var(--navy)"/>
+          </svg>
+          <div style="width:140px;display:flex;justify-content:space-between;align-items:center;margin-top:2px;font-size:12px;color:var(--slate);line-height:1;">
+            <span style="font-weight:600;text-align:left;">0</span>
+            <span style="font-weight:600;text-align:right;">2</span>
+          </div>
+          <div style="font-size:11px;letter-spacing:0.06em;color:#5A6278;margin-top:3px;line-height:1;text-align:center;">area-weighted mean</div>
+        </div>
+        <!-- Annotation below gauge -->
+        <div style="margin-top:6px;background:rgba(14,139,150,.07);border:1px solid rgba(14,139,150,.25);border-radius:8px;padding:8px 10px;width:100%;">
+          <div style="font-size:13.5px;color:var(--navy);font-weight:700;text-align:center;line-height:1.2;">4.44 × 10<sup style="font-size:10px;">−16</sup></div>
+          <div style="font-size:11.5px;color:var(--h6);font-weight:600;text-align:center;margin-top:2px;">worst cell</div>
+          
+        </div>
+
+        <!-- WIND GATE DECISION BRANCH — Pass 17 -->
+        <div style="margin-top:8px;background:rgba(46,111,217,.05);border:1px solid rgba(46,111,217,.2);border-radius:8px;padding:8px 10px;width:100%;">
+          <div style="font-size:10.5px;font-weight:700;color:var(--h2);letter-spacing:.07em;text-transform:uppercase;margin-bottom:5px;">WIND GATE</div>
+          <svg viewBox="0 0 180 108" width="180" height="108" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:0 auto;">
+            <!-- Diamond -->
+            <polygon points="90,4 170,40 90,76 10,40" fill="rgba(46,111,217,.10)" stroke="#2E6FD9" stroke-width="1.5"/>
+            <text x="90" y="36" font-family="Inter" font-size="8.5" fill="#1B2A78" font-weight="600" text-anchor="middle">wind in</text>
+            <text x="90" y="47" font-family="Inter" font-size="8.5" fill="#1B2A78" font-weight="600" text-anchor="middle">250° sector?</text>
+            <!-- YES arm (left) -->
+            <line x1="10" y1="40" x2="10" y2="82" stroke="#1E8E4A" stroke-width="1.5"/>
+            <polygon points="6,79 10,86 14,79" fill="#1E8E4A"/>
+            <text x="10" y="97" font-family="Inter" font-size="9" fill="#1E8E4A" font-weight="700" text-anchor="middle">YES</text>
+            <text x="10" y="108" font-family="Courier New" font-size="9" fill="#1E8E4A" text-anchor="middle">g→1</text>
+            <!-- NO arm (right) -->
+            <line x1="170" y1="40" x2="170" y2="82" stroke="#C0392B" stroke-width="1.5"/>
+            <polygon points="166,79 170,86 174,79" fill="#C0392B"/>
+            <text x="170" y="97" font-family="Inter" font-size="9" fill="#C0392B" font-weight="700" text-anchor="middle">NO</text>
+            <text x="170" y="108" font-family="Courier New" font-size="9" fill="#C0392B" text-anchor="middle">g→0</text>
+          </svg>
+          <div style="font-size:10px;color:var(--slate);text-align:center;margin-top:3px;line-height:1.3;">g=1: terrain · g=0: cell</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="ftr"><div class="ftr-prog" style="width:calc(100%/6*3);"></div><span class="ftr-l">PARAM — village-scale agromet forecasting</span><span class="ftr-r">@SIH Idea submission- Template &nbsp;·&nbsp; 3 / 6</span></div>
+</div>
+
+<!-- ═══════════════ FRAME 4 — FEASIBILITY ═══════════════════════════════════ -->
+<div id="f4" class="slide">
+  <div class="hdr"><div class="hdr-brand"><div class="hdr-logo"><svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 7,10 12,14 19,5"/></svg></div>KAMINARI</div><div class="hdr-mid"></div><div class="hdr-right"><span class="sih-pill">SIH 2026</span><span class="hdr-sub">SIH26074 · Team ID 12</span></div></div>
+
+  <div style="position:absolute;top:88px;left:56px;right:56px;bottom:50px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="flex-shrink:0;">
+      <div class="eyebrow" style="margin:6px 0 3px;">SMART INDIA HACKATHON 2026 · SIH26074</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:4px;">
+        <div style="width:8px;height:52px;border-radius:4px;background:var(--h3);flex-shrink:0;margin-top:2px;"></div>
+        <div>
+          <div class="pg-title" style="font-size:40px;">FEASIBILITY, RISKS AND WHAT WE DO NOT CLAIM</div>
+          <!-- SPINE F4 -->
+          <div class="spine">We never invent rain: each cell's total is preserved to double-precision 4.44 × 10<sup>−16</sup>.</div>
+        </div>
+      </div>
+      <div class="rule-h" style="margin-bottom:8px;"></div>
+    </div>
+
+    <div style="display:flex;gap:26px;flex:1;min-height:0;margin-bottom:8px;">
+      <!-- LEFT: 4 feasibility cards -->
+      <div style="flex:0 0 720px;display:flex;flex-direction:column;gap:8px;min-height:0;">
+        <div class="eyebrow" style="margin-bottom:2px;flex-shrink:0;">FEASIBILITY</div>
+        <!-- Card 1 -->
+        <div style="height:114px;background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);border-left:5px solid var(--h1);padding:14px 20px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <div class="itile it1" style="width:36px;height:36px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#F08A24" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="7" y1="5" x2="7" y2="19"/><line x1="2" y1="10" x2="22" y2="10"/></svg></div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:var(--navy);letter-spacing:.04em;text-transform:uppercase;">RUNS ON COMMODITY HARDWARE</div>
+          </div>
+          <div class="l2" style="font-size:14.5px;line-height:1.4;">Full domain, 16,943 villages in 8.8 s end to end on a laptop. No GPU, no cluster, no supercomputer time.</div>
+        </div>
+        <!-- Card 2 -->
+        <div style="height:114px;background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);border-left:5px solid var(--h2);padding:14px 20px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <div class="itile it2" style="width:36px;height:36px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#2E6FD9" stroke-width="2" stroke-linecap="round"><path d="M3 18 L9 12 L13 16 L21 6"/><line x1="3" y1="18" x2="21" y2="18"/></svg></div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:var(--navy);letter-spacing:.04em;text-transform:uppercase;">COST IS FLAT IN USERS</div>
+          </div>
+          <div class="l2" style="font-size:14.5px;line-height:1.4;">The nightly job runs once for the whole state, and the app reads one ready row. Serving cost does not grow as users grow.</div>
+        </div>
+        <!-- Card 3 -->
+        <div style="height:114px;background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);border-left:5px solid var(--h4);padding:14px 20px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <div class="itile it4" style="width:36px;height:36px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#7B3FA8" stroke-width="2" stroke-linecap="round"><line x1="4" y1="6" x2="10" y2="6"/><line x1="4" y1="10" x2="10" y2="10"/><line x1="4" y1="14" x2="10" y2="14"/><line x1="10" y1="10" x2="20" y2="10"/><polyline points="16,6 20,10 16,14"/></svg></div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:var(--navy);letter-spacing:.04em;text-transform:uppercase;">DRIVER-AGNOSTIC INGESTION</div>
+          </div>
+          <div class="l2" style="font-size:14.5px;line-height:1.4;">The lens does not care where the forecast comes from. Swapping IMD for ECMWF, or either for a future AI weather model, changes two config lines and no science.</div>
+        </div>
+        <!-- Card 4 -->
+        <div style="height:114px;background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);border-left:5px solid var(--h5);padding:14px 20px;flex-shrink:0;display:flex;flex-direction:column;justify-content:center;">
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+            <div class="itile it5" style="width:36px;height:36px;flex-shrink:0;"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#C2258F" stroke-width="2" stroke-linecap="round"><path d="M12 2 L12 22 M2 12 L22 12"/><circle cx="12" cy="12" r="9"/></svg></div>
+            <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:15px;color:var(--navy);letter-spacing:.04em;text-transform:uppercase;">ALWAYS AN ANSWER</div>
+          </div>
+          <div class="l2" style="font-size:14.5px;line-height:1.4;">Three source tiers with automatic failover. If a feed is late the farmer sees a labelled climate value, not an empty screen.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Challenges table -->
+      <div style="flex:1;display:flex;flex-direction:column;min-height:0;">
+        <div class="eyebrow" style="margin-bottom:2px;flex-shrink:0;">CHALLENGES &amp; MITIGATION</div>
+        <table class="tbl" style="flex:1;border:1px solid var(--rule);border-radius:12px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column;">
+          <thead style="flex-shrink:0;">
+            <tr style="display:flex;width:100%;"><th style="width:36%;padding:12px 18px;font-size:13.5px;">CHALLENGE</th><th style="flex:1;padding:12px 18px;font-size:13.5px;">MITIGATION</th></tr>
+          </thead>
+          <tbody style="flex:1;display:flex;flex-direction:column;justify-content:space-between;">
+            <tr style="display:flex;width:100%;flex:1;align-items:center;"><td style="width:36%;font-weight:600;font-size:15px;padding:14px 18px;">Sparse gauge network</td><td style="flex:1;font-size:15px;color:var(--slate);padding:14px 18px;line-height:1.48;">19 GHCN gauges; validated LOSO; villages carry in-band/extrapolated flags.</td></tr>
+            <tr style="display:flex;width:100%;flex:1;align-items:center;"><td style="width:36%;font-weight:600;font-size:15px;padding:14px 18px;">Out-of-season flow reversal</td><td style="flex:1;font-size:15px;color:var(--slate);padding:14px 18px;line-height:1.48;">Continuous upslope gate damps lens outside 250° sector.</td></tr>
+            <tr style="display:flex;width:100%;flex:1;align-items:center;"><td style="width:36%;font-weight:600;font-size:15px;padding:14px 18px;">Forecast feed outage</td><td style="flex:1;font-size:15px;color:var(--slate);padding:14px 18px;line-height:1.48;">Failover to ECMWF IFS, then ERA5; source named on screen.</td></tr>
+            <tr style="display:flex;width:100%;flex:1;align-items:center;"><td style="width:36%;font-weight:600;font-size:15px;padding:14px 18px;">Unverifiable claims</td><td style="flex:1;font-size:15px;color:var(--slate);padding:14px 18px;line-height:1.48;">Rainfall, temperature and ETo are reproducible from the committed precomputed CSV and git commit <span class="mono" style="font-size:14.5px;background:#EDF0F7;padding:1px 5px;border-radius:4px;">054561a</span>. The wind-gate generation script is not committed; only the precomputed <span class="mono" style="font-size:13px;color:var(--h2);">gate_g</span> column is.</td></tr>
+            <tr style="display:flex;width:100%;flex:1;align-items:center;"><td style="width:36%;font-weight:600;font-size:15px;padding:14px 18px;">Serving cost rising with user numbers.</td><td style="flex:1;font-size:15px;color:var(--slate);padding:14px 18px;line-height:1.48;">The nightly job runs once for the whole domain in 8.8 s and the app reads one prepared row, so cost does not grow as users grow.</td></tr>
+            <tr style="display:flex;width:100%;flex:1;align-items:center;border-bottom:none;"><td style="width:36%;font-weight:600;font-size:15px;padding:14px 18px;border-bottom:none;">Getting departments to adopt a new tool.</td><td style="flex:1;font-size:15px;color:var(--slate);padding:14px 18px;line-height:1.48;border-bottom:none;">Our output is a table and an API, not another app. Existing advisory channels consume it without changing how they reach farmers.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LIMITATIONS BAND — with lee-side degradation promoted to headline -->
+    <div style="background:rgba(240,138,36,.04);border:1px solid rgba(240,138,36,.25);border-radius:12px;padding:12px 18px;flex-shrink:0;">
+      <div style="display:flex;gap:28px;align-items:flex-start;">
+        <!-- Lee-side degradation HERO (burn-in moment) -->
+        <div style="flex:0 0 280px;border-right:2px solid rgba(240,138,36,.35);padding-right:20px;">
+          <div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:22px;color:var(--navy);line-height:1.2;margin-bottom:4px;">We got worse in one place. Here it is.</div>
+          <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:40px;color:var(--neg);line-height:1;margin-bottom:4px;">−14.4 %</div>
+          <div class="l2" style="font-size:13.5px;line-height:1.42;">Tmin correction was 14.4 % worse on 1,500 in-band station-days; disabled. Tmin is served from physics alone.</div>
+        </div>
+        <!-- Other limitations -->
+        <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:6px 18px;align-items:start;">
+          <div style="font-size:13.5px;color:var(--ink);line-height:1.4;border-left:3px solid var(--h1);padding-left:8px;">Rainfall median APE: 9.53 % windward / 32.03 % lee / 16.09 % pooled (spread disclosed: Hulikal 50.6 %, Agumbe Obsy 27.7 %).</div>
+          <div style="font-size:13.5px;color:var(--ink);line-height:1.4;border-left:3px solid var(--h1);padding-left:8px;">Villages outside 12.8–15.3 °N are flagged 'Extrapolated'. The flag is part of the product.</div>
+          <div style="font-size:13.5px;color:var(--ink);line-height:1.4;border-left:3px solid var(--h1);padding-left:8px;">The learned correction only sees weather and time-of-day inputs, nothing village-specific. So it fixes forecast bias at cell scale and adds no village-scale detail of its own.</div>
+          <div style="font-size:13.5px;color:var(--ink);line-height:1.4;border-left:3px solid var(--h1);padding-left:8px;">6.5 °C/km lapse rate is steeper than the monsoon profile (≈5 °C/km); high villages are over-cooled.</div>
+          <div style="font-size:13.5px;color:var(--ink);line-height:1.4;border-left:3px solid var(--h1);padding-left:8px;">We do not model night-time cold-air pooling in valleys, so our day-to-night temperature swing is narrower than the real one.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ftr"><div class="ftr-prog" style="width:calc(100%/6*4);"></div><span class="ftr-l">PARAM — village-scale agromet forecasting</span><span class="ftr-r">@SIH Idea submission- Template &nbsp;·&nbsp; 4 / 6</span></div>
+</div>
+
+<!-- ═══════════════ FRAME 5 — IMPACT ════════════════════════════════════════ -->
+<div id="f5" class="slide">
+  <div class="hdr"><div class="hdr-brand"><div class="hdr-logo"><svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 7,10 12,14 19,5"/></svg></div>KAMINARI</div><div class="hdr-mid"></div><div class="hdr-right"><span class="sih-pill">SIH 2026</span><span class="hdr-sub">SIH26074 · Team ID 12</span></div></div>
+
+  <div style="position:absolute;top:88px;left:56px;right:56px;bottom:50px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="flex-shrink:0;">
+      <div class="eyebrow" style="margin:6px 0 3px;">SMART INDIA HACKATHON 2026 · SIH26074</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:4px;">
+        <div style="width:8px;height:52px;border-radius:4px;background:var(--h4);flex-shrink:0;margin-top:2px;"></div>
+        <div>
+          <div class="pg-title" style="font-size:40px;">IMPACT, AND THE NUMBERS BEHIND IT</div>
+          <!-- SPINE F5 -->
+          <div class="spine">Error fell from 1.84 °C to 1.47 °C where the terrain helps us, and rose where it doesn't — both are shown.</div>
+        </div>
+      </div>
+      <div class="rule-h" style="margin-bottom:6px;"></div>
+    </div>
+
+    <!-- BURN-IN: temperature hero -->
+    <div style="flex-shrink:0;background:var(--deep);border-radius:14px;padding:16px 32px;display:flex;align-items:center;gap:44px;margin-bottom:8px;">
+      <div>
+        <div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:48px;color:#fff;line-height:1;font-variant-numeric:tabular-nums;white-space:nowrap;">1.84 °C → 1.47 °C</div>
+        <div style="font-size:16px;color:rgba(255,255,255,.75);margin-top:5px;font-weight:500;">Daily Tmax MAE, physics → ML (−20.0 %)</div>
+        <div style="display:flex;gap:24px;margin-top:6px;">
+          <div style="font-size:15px;color:rgba(255,255,255,.9);font-weight:600;">Karwar 14.8135 N, 74.1298 E (primary)</div>
+          <div style="width:1px;height:18px;background:rgba(255,255,255,.2);"></div>
+          <div style="font-size:15px;color:rgba(255,255,255,.9);font-weight:600;">Honavar 14.2800 N, 74.4400 E (secondary)</div>
+        </div>
+      </div>
+      <div style="border-left:1px solid rgba(255,255,255,.15);padding-left:32px;display:flex;gap:24px;">
+        <div style="text-align:center;"><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:34px;color:var(--h1);line-height:1;">16.6 %</div><div style="font-size:12.5px;color:rgba(255,255,255,.6);margin-top:3px;">Seasonal rainfall<br>MAPE</div></div>
+        <div style="text-align:center;"><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:34px;color:var(--h3);line-height:1;">8.8 s</div><div style="font-size:12.5px;color:rgba(255,255,255,.6);margin-top:3px;">Full-domain<br>runtime</div></div>
+        <div style="text-align:center;"><div style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:34px;color:var(--h6);line-height:1;">16,943</div><div style="font-size:12.5px;color:rgba(255,255,255,.6);margin-top:3px;">Villages served<br>nightly</div></div>
+      </div>
+    </div>
+
+    <!-- Lower content: table + note left, map + who benefits right -->
+    <div style="display:flex;gap:26px;flex:1;min-height:0;">
+
+      <!-- LEFT: Validation table + note -->
+      <div style="flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;justify-content:space-between;">
+        <div>
+          <div class="eyebrow" style="margin-bottom:4px;">VALIDATION SUMMARY</div>
+          <table class="tbl" style="border:1px solid var(--rule);border-radius:10px;overflow:hidden;box-shadow:var(--shadow);">
+            <thead><tr><th style="padding:6px 12px;font-size:12.5px;">METRIC</th><th style="text-align:right;padding:6px 12px;font-size:12.5px;">RESULT</th></tr></thead>
+            <tbody>
+              <tr><td style="font-size:13.5px;padding:6px 12px;">Windward rainfall median APE</td><td style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:var(--navy);text-align:right;padding:6px 12px;">9.53 %</td></tr>
+              <tr><td style="font-size:13.5px;padding:6px 12px;">Lee-side rainfall median APE</td><td style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:var(--navy);text-align:right;padding:6px 12px;">32.03 %</td></tr>
+              <tr><td style="font-size:13.5px;padding:6px 12px;">Pooled rainfall median APE</td><td style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:var(--navy);text-align:right;padding:6px 12px;">16.09 %</td></tr>
+              <tr><td style="font-size:12px;padding:3px 12px;color:var(--slate);" colspan="2">Per-station spread disclosed: Hulikal 50.6 %, Agumbe Obsy 27.7 %</td></tr>
+              <tr><td style="font-size:13.5px;padding:6px 12px;">Tmax MAE (ECMWF IFS served)</td><td style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:var(--navy);text-align:right;padding:6px 12px;">2.12 °C → 1.53 °C</td></tr>
+              <tr><td style="font-size:13.5px;border-bottom:none;padding:6px 12px;">Validation sample counts</td><td style="font-family:'Montserrat',sans-serif;font-weight:800;font-size:15px;color:var(--navy);text-align:right;border-bottom:none;padding:6px 12px;">19 gauges · 605 IFS / 1,500 ERA5 stn-days</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="background:#EEF1F8;border-left:4px solid var(--h2);border-radius:0 8px 8px 0;padding:10px 14px;display:flex;align-items:center;flex-shrink:0;">
+          <div class="l2" style="font-size:14px;line-height:1.45;">Operational IFS forecast validation: Tmax MAE 2.12 °C → 1.53 °C across 605 station-days (Karwar, Honavar, Chitradurga, 2024); ERA5 reference: 1.84 °C → 1.56 °C over 1,500 station-days. Tmin served physics-only.</div>
+        </div>
+        <!-- SO WHAT GAP — Pass 17 -->
+        <div style="background:rgba(47,168,79,.06);border-left:4px solid var(--h3);border-radius:0 8px 8px 0;padding:10px 14px;flex-shrink:0;">
+          <div class="l2" style="font-size:13.5px;line-height:1.45;">Maragondanahalli and Sanyasihalli — two villages in cell (node 17, 10 at 13.25° N, 76.00° E), widest cell (10.4 mm spread; median 1.1 mm) — share 8.6 mm block forecast. Terrain lens: Maragondanahalli gets 5.6 mm, Sanyasihalli gets 15.9 mm. Opposite irrigation decisions; block advisory cannot tell them apart. The terrain ratio is fixed, so the gap between villages scales with the cell's rainfall. On 17 September the domain was in light rain and the median cell spread was 1.1 mm. On a heavy monsoon day the same ratio opens the same two villages much further apart.</div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Map + Who benefits -->
+      <div style="flex:0 0 700px;display:flex;flex-direction:column;gap:6px;min-height:0;justify-content:space-between;">
+        <div style="background:var(--white);border:1px solid var(--rule);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;flex-shrink:0;height:250px;position:relative;">
+          <svg viewBox="0 0 700 224" width="700" height="224" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+            <rect x="0" y="0" width="50" height="224" fill="#F0F2F7"/>
+            <rect x="50" y="0" width="60" height="224" fill="#E4E8F2"/>
+            <rect x="110" y="0" width="55" height="224" fill="#D2D8E6"/>
+            <rect x="165" y="0" width="45" height="224" fill="#C9CFDE"/>
+            <rect x="210" y="0" width="80" height="224" fill="#B9C1D4"/>
+            <rect x="290" y="0" width="410" height="224" fill="#A9B2C8"/>
+            <g stroke="#D8DDEA" stroke-width="1" fill="none">
+              <line x1="70" y1="0" x2="70" y2="224"/><line x1="140" y1="0" x2="140" y2="224"/>
+              <line x1="210" y1="0" x2="210" y2="224"/><line x1="280" y1="0" x2="280" y2="224"/>
+              <line x1="350" y1="0" x2="350" y2="224"/><line x1="420" y1="0" x2="420" y2="224"/>
+              <line x1="490" y1="0" x2="490" y2="224"/><line x1="560" y1="0" x2="560" y2="224"/>
+              <line x1="630" y1="0" x2="630" y2="224"/>
+              <line x1="0" y1="45" x2="700" y2="45"/><line x1="0" y1="90" x2="700" y2="90"/>
+              <line x1="0" y1="135" x2="700" y2="135"/><line x1="0" y1="180" x2="700" y2="180"/>
+            </g>
+            <rect x="0" y="70" width="700" height="90" fill="rgba(14,139,150,.1)"/>
+            <line x1="0" y1="70" x2="700" y2="70" stroke="#0E8B96" stroke-width="1" stroke-dasharray="6,4"/>
+            <line x1="0" y1="160" x2="700" y2="160" stroke="#0E8B96" stroke-width="1" stroke-dasharray="6,4"/>
+            <text x="686" y="86" font-family="Inter" font-size="11" fill="#0E8B96" font-weight="600" text-anchor="end">validated band 12.8–15.3 °N</text>
+            <text x="24" y="20" font-family="Inter" font-size="12" fill="#5A6278" font-weight="700">COAST</text>
+            <text x="180" y="20" font-family="Inter" font-size="12" fill="#5A6278" font-weight="700">CREST</text>
+            <text x="440" y="20" font-family="Inter" font-size="12" fill="#5A6278" font-weight="700">RAIN SHADOW</text>
+            <path d="M60,95 L63,102 L70,102 L64,106 L66,113 L60,109 L54,113 L56,106 L50,102 L57,102 Z" fill="#0E8B96"/>
+            <line x1="68" y1="101" x2="80" y2="95" stroke="#0E8B96" stroke-width="1"/>
+            <rect x="80" y="85" width="58" height="18" rx="3" fill="rgba(255,255,255,.85)"/>
+            <text x="109" y="98" font-family="Inter" font-size="12" fill="var(--navy)" font-weight="600" text-anchor="middle">Karwar</text>
+            <path d="M72,135 L75,142 L82,142 L76,146 L78,153 L72,149 L66,153 L68,146 L62,142 L69,142 Z" fill="#0E8B96"/>
+            <line x1="80" y1="141" x2="92" y2="135" stroke="#0E8B96" stroke-width="1"/>
+            <rect x="92" y="125" width="62" height="18" rx="3" fill="rgba(255,255,255,.85)"/>
+            <text x="123" y="138" font-family="Inter" font-size="12" fill="var(--navy)" font-weight="600" text-anchor="middle">Honavar</text>
+            <path d="M430,120 L433,127 L440,127 L434,131 L436,138 L430,134 L424,138 L426,131 L420,127 L427,127 Z" fill="#0E8B96"/>
+            <line x1="430" y1="138" x2="430" y2="147" stroke="#0E8B96" stroke-width="1"/>
+            <rect x="390" y="147" width="80" height="18" rx="3" fill="rgba(255,255,255,.85)"/>
+            <text x="430" y="160" font-family="Inter" font-size="12" fill="var(--navy)" font-weight="600" text-anchor="middle">Chitradurga</text>
+          </svg>
+          <div style="height:24px;background:#FAFBFC;border-top:1px solid var(--rule);display:flex;align-items:center;padding:0 12px;font-size:11.5px;color:var(--slate);">
+            247 cells · 19 gauges · 3 validated stations
+          </div>
+        </div>
+
+        <div class="eyebrow" style="margin-top:2px;">WHO BENEFITS</div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex:1;justify-content:space-between;">
+          <div style="background:var(--white);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);padding:8px 16px;border-left:4px solid var(--h3);flex:1;display:flex;flex-direction:column;justify-content:center;"><div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14.5px;color:var(--navy);margin-bottom:2px;">FARMERS</div><div class="l2" style="font-size:14px;line-height:1.4;">A village-specific irrigation and sowing signal instead of a block-level bulletin, with an explicit honesty flag on coverage.</div></div>
+          <div style="background:var(--white);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);padding:8px 16px;border-left:4px solid var(--h2);flex:1;display:flex;flex-direction:column;justify-content:center;"><div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14.5px;color:var(--navy);margin-bottom:2px;">STATE AGRICULTURE DEPARTMENTS</div><div class="l2" style="font-size:14px;line-height:1.4;">A 16,943-row nightly table that plugs into existing advisory channels without competing with the official IMD bulletin.</div></div>
+          <div style="background:var(--white);border:1px solid var(--rule);border-radius:8px;box-shadow:var(--shadow);padding:8px 16px;border-left:4px solid var(--h6);flex:1;display:flex;flex-direction:column;justify-content:center;"><div style="font-family:'Montserrat',sans-serif;font-weight:700;font-size:14.5px;color:var(--navy);margin-bottom:2px;">DISASTER AND WATER MANAGEMENT</div><div class="l2" style="font-size:14px;line-height:1.4;">Resolved rain-shadow and ridge contrast for reservoir inflow and local flood-risk screening.</div></div>
+        </div>
+        <div class="emph" style="padding:8px 16px;border-radius:8px;justify-content:space-between;flex-shrink:0;">
+          <span style="font-weight:600;font-size:14px;color:#fff;">16,943 villages · 247 cells · 2 states</span>
+          <div style="width:1px;height:20px;background:rgba(255,255,255,.2);"></div>
+          <span style="font-weight:600;font-size:14px;color:#fff;">Three times more rainfall resolved inside a single 28 km cell</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ftr"><div class="ftr-prog" style="width:calc(100%/6*5);"></div><span class="ftr-l">PARAM — village-scale agromet forecasting</span><span class="ftr-r">@SIH Idea submission- Template &nbsp;·&nbsp; 5 / 6</span></div>
+</div>
+
+<!-- ═══════════════ FRAME 6 — REFERENCES ════════════════════════════════════ -->
+<div id="f6" class="slide">
+  <div class="hdr"><div class="hdr-brand"><div class="hdr-logo"><svg viewBox="0 0 22 22" width="20" height="20" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="2,18 7,10 12,14 19,5"/></svg></div>KAMINARI</div><div class="hdr-mid"></div><div class="hdr-right"><span class="sih-pill">SIH 2026</span><span class="hdr-sub">SIH26074 · Team ID 12</span></div></div>
+
+  <div style="position:absolute;top:88px;left:56px;right:56px;bottom:50px;display:flex;flex-direction:column;justify-content:space-between;">
+    <div style="flex-shrink:0;">
+      <div class="eyebrow" style="margin:6px 0 3px;">PROVENANCE</div>
+      <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:4px;">
+        <div style="width:8px;height:52px;border-radius:4px;background:var(--h5);flex-shrink:0;margin-top:2px;"></div>
+        <div>
+          <div class="pg-title" style="font-size:40px;">DATA, METHOD AND REFERENCES</div>
+          <!-- SPINE F6 -->
+          <div class="spine">Every input is named, versioned and ranked, and what we rejected is listed too.</div>
+        </div>
+      </div>
+      <div class="rule-h" style="margin-bottom:6px;"></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;flex:1;min-height:0;">
+      <!-- COL 1: DATA -->
+      <div style="overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div class="col-hdr"><span class="col-hdr-t">Data</span><span class="col-hdr-n">01</span></div>
+        <div class="eyebrow" style="font-size:12px;margin-bottom:4px;">FORECAST SOURCE HIERARCHY</div>
+        <!-- Three-tier ladder: hero -->
+        <div class="tier-row" style="align-items:center;padding:6px 0;"><div class="hex ht1">T1</div><div style="flex:1;"><div style="font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.35;">IMD</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">National primary (T1)</div></div><span class="pill-await">AWAITING</span></div>
+        <div class="tier-row" style="align-items:center;padding:6px 0;"><div class="hex ht2">T2</div><div style="flex:1;"><div style="font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.35;">ECMWF IFS 0.25° (Open-Meteo)</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">Live driver</div></div><span class="pill-live">LIVE</span></div>
+        <div class="tier-row" style="padding:6px 0;"><div class="hex ht3">T3</div><div style="flex:1;"><div style="font-weight:700;font-size:14.5px;color:var(--navy);line-height:1.35;">ERA5 (Hersbach et al., 2020)</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">Calibration; fallback floor</div></div><span class="pill-cal">CALIBRATION</span></div>
+        <!-- CHIRPS rejection at 18px -->
+        <div style="background:rgba(192,57,43,.06);border:1px solid rgba(192,57,43,.22);border-radius:8px;padding:8px 12px;margin-top:4px;margin-bottom:6px;">
+          <div style="font-size:18px;font-weight:600;color:var(--neg);line-height:1.35;">CHIRPS v2.0 rejected: captures ~30 % of crest totals.</div>
+          <div style="font-size:12.5px;color:var(--slate);margin-top:3px;">CHIRPS v2.0 — Funk et al. (2015). Evaluated and rejected.</div>
+        </div>
+        <div class="eyebrow" style="font-size:12px;margin:4px 0 3px;">TERRAIN, GAUGES AND BOUNDARIES</div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:0;">
+          <div style="border-bottom:1px solid var(--rule);padding:5px 0;"><div style="font-weight:700;font-size:13.5px;color:var(--navy);line-height:1.35;">SRTM 30 m elevation (Google Earth Engine).</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:5px 0;"><div style="font-weight:700;font-size:13.5px;color:var(--navy);line-height:1.35;">NOAA GHCN-Daily (Menne et al., 2012)</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">19 gauges, 3 with temperature.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:5px 0;"><div style="font-weight:700;font-size:13.5px;color:var(--navy);line-height:1.35;">Independent validation</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">Karwar (12 m), Honavar (30 m), Chitradurga (704 m).</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:5px 0;"><div style="font-weight:700;font-size:13.5px;color:var(--navy);line-height:1.35;">Training stations</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">Aurangpur, Bhatsanagar_1, Natuwadi Dam_1 (186–286 m).</div></div>
+          <div style="padding:5px 0;"><div style="font-weight:700;font-size:13.5px;color:var(--navy);line-height:1.35;">DataMeet village boundaries (Census 2001).</div></div>
+        </div>
+      </div>
+
+      <!-- COL 2: METHOD -->
+      <div style="overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div class="col-hdr"><span class="col-hdr-t">Method</span><span class="col-hdr-n">02</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:0;">
+          <div style="border-bottom:1px solid var(--rule);padding:5px 0;"><div style="font-weight:700;font-size:14px;color:var(--navy);line-height:1.35;">Smith &amp; Barstad (2004) · Dispersion Knee (σ = 20 km)</div><div style="font-size:12.5px;color:var(--slate);line-height:1.35;">Terrain redistribution basis. Lateral dispersion σ = 20 km is solely the empirical knee of the error curve; theoretical scaling σ<sub>y</sub> ≈ √(2·K<sub>y</sub>·x/U) and citations (Smith 1989, Pan &amp; Smith 1999, Sikka 2003) are marked unverified.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-weight:700;font-size:14px;color:var(--navy);line-height:1.35;">Allen et al., FAO-56 (1998)</div><div style="font-size:13.5px;color:var(--slate);line-height:1.35;">Reference for crop water demand (ETo) and solar geometry.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-weight:700;font-size:14px;color:var(--navy);line-height:1.35;">Hargreaves &amp; Samani (1985)</div><div style="font-size:13.5px;color:var(--slate);line-height:1.35;">Temperature-based crop water demand (ETo) formula.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-weight:700;font-size:14px;color:var(--navy);line-height:1.35;">Chen &amp; Guestrin (2016)</div><div style="font-size:13.5px;color:var(--slate);line-height:1.35;">XGBoost gradient boosting, used for the leftover-error correction.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-weight:700;font-size:14px;color:var(--navy);line-height:1.35;">Mardani et al. (2025)</div><div style="font-size:13.5px;color:var(--slate);line-height:1.35;">Residual corrective diffusion modelling for km-scale atmospheric downscaling.</div><div style="font-size:12px;margin-top:2px;"><a href="https://www.nature.com/articles/s43247-025-02042-5" style="color:var(--h2);text-decoration:none;">https://www.nature.com/articles/s43247-025-02042-5</a></div></div>
+          <div style="padding:6px 0;">
+            <div style="font-weight:700;font-size:13px;color:var(--navy);margin-bottom:2px;">TRAINING-SIDE LOSO RESULT</div>
+            <div style="font-style:italic;font-size:11.5px;color:var(--slate);margin-bottom:3px;line-height:1.3;">LOSO on training stations; page 5 test is authority.</div>
+            <table class="tbl" style="font-size:12.5px;">
+              <thead><tr><th style="padding:4px 8px;">STATION</th><th style="padding:4px 8px;">MAE BEFORE</th><th style="padding:4px 8px;">MAE AFTER</th><th style="padding:4px 8px;">IMPROVEMENT</th></tr></thead>
+              <tbody>
+                <tr><td style="padding:4px 8px;">Aurangpur</td><td style="font-family:'Montserrat',sans-serif;font-weight:700;padding:4px 8px;">2.08 °C</td><td style="font-family:'Montserrat',sans-serif;font-weight:700;padding:4px 8px;">1.83 °C</td><td style="color:var(--pos);font-weight:700;padding:4px 8px;">−12.0 %</td></tr>
+                <tr><td style="padding:4px 8px;">Bhatsanagar_1</td><td style="font-family:'Montserrat',sans-serif;font-weight:700;padding:4px 8px;">1.93 °C</td><td style="font-family:'Montserrat',sans-serif;font-weight:700;padding:4px 8px;">1.54 °C</td><td style="color:var(--pos);font-weight:700;padding:4px 8px;">−20.2 %</td></tr>
+                <tr><td style="padding:4px 8px;">Natuwadi Dam_1</td><td style="font-family:'Montserrat',sans-serif;font-weight:700;padding:4px 8px;">2.15 °C</td><td style="font-family:'Montserrat',sans-serif;font-weight:700;padding:4px 8px;">1.71 °C</td><td style="color:var(--pos);font-weight:700;padding:4px 8px;">−20.5 %</td></tr>
+              </tbody>
+            </table>
+            <div style="margin-top:4px;height:68px;position:relative;">
+              <svg viewBox="0 0 240 78" width="240" height="78" xmlns="http://www.w3.org/2000/svg">
+                <text x="10" y="10" font-family="Inter" font-size="12" fill="var(--slate)">before</text>
+                <text x="148" y="10" font-family="Inter" font-size="12" fill="var(--slate)">after</text>
+                <line x1="40" y1="16" x2="40" y2="72" stroke="#E4E8F2" stroke-width="1.5"/>
+                <line x1="142" y1="16" x2="142" y2="72" stroke="#E4E8F2" stroke-width="1.5"/>
+                <circle cx="40" cy="32" r="3.5" fill="#F08A24"/><circle cx="142" cy="24" r="3.5" fill="#2FA84F"/>
+                <line x1="40" y1="32" x2="142" y2="24" stroke="#2FA84F" stroke-width="1.8"/>
+                <text x="148" y="27" font-family="Inter" font-size="12" fill="var(--navy)" font-weight="600">Aurangpur</text>
+                <circle cx="40" cy="49" r="3.5" fill="#F08A24"/><circle cx="142" cy="42" r="3.5" fill="#2FA84F"/>
+                <line x1="40" y1="49" x2="142" y2="42" stroke="#2FA84F" stroke-width="1.8"/>
+                <text x="148" y="45" font-family="Inter" font-size="12" fill="var(--navy)" font-weight="600">Bhatsanagar_1</text>
+                <circle cx="40" cy="66" r="3.5" fill="#F08A24"/><circle cx="142" cy="60" r="3.5" fill="#2FA84F"/>
+                <line x1="40" y1="66" x2="142" y2="60" stroke="#2FA84F" stroke-width="1.8"/>
+                <text x="148" y="63" font-family="Inter" font-size="12" fill="var(--navy)" font-weight="600">Natuwadi Dam_1</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COL 3: TOOLING -->
+      <div style="overflow:hidden;display:flex;flex-direction:column;min-height:0;">
+        <div class="col-hdr"><span class="col-hdr-t">Tooling</span><span class="col-hdr-n">03</span></div>
+        <div style="flex:1;display:flex;flex-direction:column;justify-content:space-between;min-height:0;">
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>Python, NumPy, SciPy, pandas.</strong> Our core compute layer.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>rasterio and rasterstats</strong> — reads and summarises the 250 m raster files.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>XGBoost</strong> — gradient boosted tree residual model (9 inputs, committed feature metadata).</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>FastAPI and Uvicorn</strong> — our serving layer.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>React, MapLibre GL</strong> — village map interface.</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>Vercel</strong> — hosting (URLs shown on page 1).</div></div>
+          <div style="border-bottom:1px solid var(--rule);padding:6px 0;"><div style="font-size:14.5px;color:var(--ink);line-height:1.35;"><strong>Reproducibility</strong> — Git commit <span class="mono" style="font-size:14.5px;background:#EDF0F7;padding:1px 5px;border-radius:4px;">054561a</span> logged in forecast_provenance.json.</div></div>
+          <div class="not-used" style="padding:8px 14px;flex:1;min-height:0;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-weight:700;font-size:12px;color:var(--slate);letter-spacing:.07em;text-transform:uppercase;margin-bottom:6px;">NOT IN REPOSITORY</div>
+            <div style="display:flex;flex-direction:column;gap:5px;">
+              <div style="font-size:14px;color:var(--slate);line-height:1.35;"><span style="color:#9aa0b0;margin-right:6px;">×</span>NWDP</div>
+              <div style="font-size:14px;color:var(--slate);line-height:1.35;"><span style="color:#9aa0b0;margin-right:6px;">×</span>GPM IMERG</div>
+              <div style="font-size:14px;color:var(--slate);line-height:1.35;"><span style="color:#9aa0b0;margin-right:6px;">×</span>NDVI</div>
+              <div style="font-size:14px;color:var(--slate);line-height:1.35;"><span style="color:#9aa0b0;margin-right:6px;">×</span>Soil sensors</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ftr"><div class="ftr-prog" style="width:100%;"></div><span class="ftr-l">PARAM — village-scale agromet forecasting</span><span class="ftr-r">@SIH Idea submission- Template &nbsp;·&nbsp; 6 / 6</span></div>
+</div>
+
+</body>
+</html>

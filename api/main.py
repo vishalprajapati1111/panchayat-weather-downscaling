@@ -37,7 +37,16 @@ df["name_lower"] = df["name"].str.lower()
 df["state"] = df["state"].astype(str)
 df["inside_validated_band"] = df["inside_validated_band"].astype(bool)
 
-DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily.csv"
+# Serving configuration flag: set to False for instant 1-line mid-demo revert to physics-only
+SERVE_ML_TEMPERATURE: bool = True
+
+if SERVE_ML_TEMPERATURE:
+    DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily_ml.csv"
+else:
+    DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily_physics.csv"
+
+if not DAILY_DATA_PATH.exists():
+    DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily.csv"
 if not DAILY_DATA_PATH.exists():
     DAILY_DATA_PATH = Path("outputs/village_daily_20260917.csv")
 if not DAILY_DATA_PATH.exists():
@@ -201,13 +210,11 @@ def daily(
         "tmin_c": round(float(row["tmin_c"]), 2),
         "tmean_c": round(float(row["tmean_c"]), 2),
         "eto_mm_day": round(float(row["eto_mm_day"]), 2),
-        "ml_offset_tmin_c": round(float(row["ml_offset_tmin_c"]), 2) if "ml_offset_tmin_c" in row else 0.0,
-        "ml_model_version": str(row["ml_model_version"]) if "ml_model_version" in row else "v2",
-        "ml_applied_to": str(row["ml_applied_to"]) if "ml_applied_to" in row else "tmin_only",
-        "diurnal_range_before_c": round(float(row["diurnal_range_before_c"]), 2) if "diurnal_range_before_c" in row else 0.0,
-        "diurnal_range_after_c": round(float(row["diurnal_range_after_c"]), 2) if "diurnal_range_after_c" in row else 0.0,
-        "eto_before_mm_day": round(float(row["eto_before_mm_day"]), 2) if "eto_before_mm_day" in row else round(float(row["eto_mm_day"]), 2),
-        "eto_after_mm_day": round(float(row["eto_after_mm_day"]), 2) if "eto_after_mm_day" in row else round(float(row["eto_mm_day"]), 2),
+        "tmax_source": str(row["tmax_source"]) if "tmax_source" in row else ("ml_corrected" if SERVE_ML_TEMPERATURE else "physics"),
+        "ml_offset_tmax_c": round(float(row["ml_offset_tmax_c"]), 2) if "ml_offset_tmax_c" in row else 0.0,
+        "ml_model_version": str(row["ml_model_version"]) if "ml_model_version" in row else ("v2" if SERVE_ML_TEMPERATURE else "none"),
+        "ml_applied_to": str(row["ml_applied_to"]) if "ml_applied_to" in row else ("tmax_only" if SERVE_ML_TEMPERATURE else "none"),
+        "clamp_limit_c": 2.0,
         "inside_validated_band": bool(row["inside_validated_band"]),
         "distance_km": distance_km,
         "in_domain": in_domain,
@@ -249,22 +256,43 @@ def search(q: str = Query("", description="Search query")):
 def model_info():
     return {
         "rainfall": {
-            "median_ape_pct": 11.5,
-            "unanchored_mape_pct": 19.2,
-            "windward_mape_pct": 9.1,
-            "leeward_mape_pct": 31.9,
+            "canonical_median_ape_pct": 16.09,
+            "windward_median_ape_pct": 9.53,
+            "leeward_median_ape_pct": 32.03,
             "n_gauges": 19,
             "domain_band": "12.8-15.3N",
             "n_villages_in_band": 8634,
-            "n_villages_total": 16943
+            "n_villages_total": 16943,
+            "per_station_spread_ape_pct": {
+                "Hulikal": 50.6,
+                "Agumbe_Obsy": 27.7
+            },
+            "cell_mass_conservation_worst_error": 4.44e-16
         },
         "temperature": {
-            "method": "lapse-rate physics (6.5 C/km) on 30 m SRTM polygon-mean elevation; served values are physics-only",
-            "validation_split": "leave-one-station-out",
-            "stations": ["Aurangpur", "Bhatsanagar_1", "Natuwadi Dam_1"],
-            "loso_mae_baseline_c": 2.13,
-            "loso_mae_corrected_c": 1.63,
-            "pct_improvement": 23.6,
-            "note": "The XGBoost residual correction was validated leave-one-station-out at three stations (MAE 2.13 -> 1.63 C, 23.6% improvement) but is NOT applied to the village values served here; it requires hourly ERA5 inputs unavailable at request time."
+            "tmax_serving_method": "XGBoost diurnal residual correction (v2) applied to lapse-rate base with hard +/-2.0 C clamp" if SERVE_ML_TEMPERATURE else "physics-only lapse-rate (6.5 C/km) on 30 m SRTM terrain",
+            "tmin_serving_method": "physics-only lapse-rate (6.5 C/km); ML disabled (-14.4% negative transfer on Tmin)",
+            "served_tmax_source": "ml_corrected" if SERVE_ML_TEMPERATURE else "physics",
+            "clamp_rule": "hard +/-2.0 C ceiling applied to hourly residuals and daily offsets",
+            "revert_command": "Set SERVE_ML_TEMPERATURE = False in release/api/main.py",
+            "accuracy": {
+                "ecmwf_ifs_forecast_served": {
+                    "input_source": "Open-Meteo ECMWF IFS 0.25 deg operational forecasts (2024-03 to 2024-12, 605 station-days)",
+                    "tmax_baseline_mae_c": 2.1225,
+                    "tmax_ml_corrected_mae_c": 1.5320,
+                    "improvement_pct": 27.8,
+                    "worse_days_pct": 15.5,
+                    "tmin_physics_mae_c": 1.1876
+                },
+                "era5_reanalysis_reference": {
+                    "input_source": "ERA5 hourly reanalysis (2023-01 to 2024-12, 1,500 station-days)",
+                    "tmax_baseline_mae_c": 1.8404,
+                    "tmax_ml_corrected_mae_c": 1.5558,
+                    "improvement_pct": 15.5,
+                    "worse_days_pct": 31.9,
+                    "tmin_physics_mae_c": 1.0540
+                }
+            },
+            "note": "The batch pipeline precomputes both village_daily_physics.csv and village_daily_ml.csv. Served values use ECMWF IFS 0.25 deg forecast inputs with ML-corrected Tmax (MAE 2.12 -> 1.53 C across 605 IFS station-days) and physics-only Tmin (1.19 C on IFS / 1.054 C on ERA5). A 1-line mid-demo revert to physics is enabled via SERVE_ML_TEMPERATURE = False."
         }
     }
