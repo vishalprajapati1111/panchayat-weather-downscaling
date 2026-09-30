@@ -38,7 +38,7 @@ df["state"] = df["state"].astype(str)
 df["inside_validated_band"] = df["inside_validated_band"].astype(bool)
 
 # Serving configuration flag: set to False for instant 1-line mid-demo revert to physics-only
-SERVE_ML_TEMPERATURE: bool = True
+SERVE_ML_TEMPERATURE: bool = False
 
 if SERVE_ML_TEMPERATURE:
     DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily_ml.csv"
@@ -46,7 +46,7 @@ else:
     DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily_physics.csv"
 
 if not DAILY_DATA_PATH.exists():
-    DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily.csv"
+    DAILY_DATA_PATH = BASE_DIR / "data" / "village_daily_physics.csv"
 if not DAILY_DATA_PATH.exists():
     DAILY_DATA_PATH = Path("outputs/village_daily_20260917.csv")
 if not DAILY_DATA_PATH.exists():
